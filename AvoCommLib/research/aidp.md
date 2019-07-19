@@ -44,25 +44,27 @@ Commands:
 
 ### 1 - Discover Request
 
-uint8_t  - `255` - Target?
-
-||
-
-uint8_t  - `1`
+if extended {
+uint8_t  - `1` - Protocol?
 uint16_t - `2`
 uint8_t  - `1`
 uint8_t  - `8`
 
 if network prefix {
-uint8_t  - `2`
+uint8_t  - `2` - Network Prefix
 uint16_t - `16`
 uint8_t[N] - Network prefix
-uint8_t  - `3`
+
+uint8_t  - `3` - Network Prefix Length
 uint16_t - `1`
 uint8_t  - Network prefix length
 }
+}
 
 uint8_t  - `255`
+
+### 2 - Test IP
+
 
 ### 129 - Discover Response
 
