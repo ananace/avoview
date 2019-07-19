@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AvoCommLib", "AvoCommLib\Av
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AvoViewer", "AvoViewer\AvoViewer.csproj", "{9EA068A7-94DF-4CFD-A4EA-D8B004AE41B6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AvoREPL", "AvoREPL\AvoREPL.csproj", "{4C7EFC55-6A9A-42D4-999C-06DC6B8FEADE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,5 +46,17 @@ Global
 		{9EA068A7-94DF-4CFD-A4EA-D8B004AE41B6}.Release|x64.Build.0 = Release|Any CPU
 		{9EA068A7-94DF-4CFD-A4EA-D8B004AE41B6}.Release|x86.ActiveCfg = Release|Any CPU
 		{9EA068A7-94DF-4CFD-A4EA-D8B004AE41B6}.Release|x86.Build.0 = Release|Any CPU
+		{4C7EFC55-6A9A-42D4-999C-06DC6B8FEADE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C7EFC55-6A9A-42D4-999C-06DC6B8FEADE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C7EFC55-6A9A-42D4-999C-06DC6B8FEADE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4C7EFC55-6A9A-42D4-999C-06DC6B8FEADE}.Debug|x64.Build.0 = Debug|Any CPU
+		{4C7EFC55-6A9A-42D4-999C-06DC6B8FEADE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4C7EFC55-6A9A-42D4-999C-06DC6B8FEADE}.Debug|x86.Build.0 = Debug|Any CPU
+		{4C7EFC55-6A9A-42D4-999C-06DC6B8FEADE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C7EFC55-6A9A-42D4-999C-06DC6B8FEADE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C7EFC55-6A9A-42D4-999C-06DC6B8FEADE}.Release|x64.ActiveCfg = Release|Any CPU
+		{4C7EFC55-6A9A-42D4-999C-06DC6B8FEADE}.Release|x64.Build.0 = Release|Any CPU
+		{4C7EFC55-6A9A-42D4-999C-06DC6B8FEADE}.Release|x86.ActiveCfg = Release|Any CPU
+		{4C7EFC55-6A9A-42D4-999C-06DC6B8FEADE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

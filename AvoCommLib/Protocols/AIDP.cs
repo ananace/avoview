@@ -1,0 +1,168 @@
+using System;
+using System.IO;
+using System.Net;
+using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace AvoCommLib
+{
+    namespace Protocols
+    {
+        public class AIDP
+        {
+            const int HEADER_SIZE = 13;
+
+            UdpClient _udpSocket = new UdpClient();
+            ushort _sequenceID = 0;
+
+            public AIDP(bool multicast)
+            {
+                if (!multicast)
+                    throw new ArgumentException("Multicast must be true for a multicast socket", nameof(multicast));
+
+                _udpSocket.EnableBroadcast = true;
+            }
+
+            public AIDP(IPAddress ip, ushort port = 3211) : this(new IPEndPoint(ip, port))
+            {
+            }
+
+            public AIDP(IPEndPoint endpoint)
+            {
+                _udpSocket.Connect(endpoint.Address, endpoint.Port);
+                // _udpSocket.Client.RemoteEndPoint = endpoint;
+            }
+
+            public void Discover()
+            {
+                var data = Request(0x01, new byte[] { 0xFF });
+                data.Wait();
+
+                byte fieldId;
+                byte[] lenBytes = new byte[2];
+                ushort fieldLength;
+                using (MemoryStream stream = new MemoryStream(data.Result))
+                using (BinaryReader read = new BinaryReader(stream))
+                while(true)
+                {
+                    fieldId = read.ReadByte();
+                    fieldLength = read.ReadUInt16();
+
+                    switch (fieldId)
+                    {
+                    case 1:
+                        {
+                            var model = read.ReadUInt16();
+
+                            Console.WriteLine($"Model: {model}");
+                        }
+                        break;
+
+                    case 255: return;
+
+                    default:
+                        {
+                            Console.WriteLine($"Unknown field ID {fieldId}");
+                            stream.Seek(fieldLength, SeekOrigin.Current);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            public async Task<byte[]> Request(byte CommandID, byte[] CommandData)
+            {
+                var packet = new byte[CommandData.Length + HEADER_SIZE];
+
+                var sequence = NextSequenceID();
+                byte[] seqBytes = BitConverter.GetBytes((UInt16)sequence);
+                byte[] lenBytes = BitConverter.GetBytes((UInt32)CommandData.Length);
+
+                using (MemoryStream stream = new MemoryStream(packet))
+                using (BinaryWriter write = new BinaryWriter(stream))
+                {
+                    write.Write((byte)1);
+                    write.Write("AIDP");
+                    write.Write((UInt16)sequence);
+                    write.Write((byte)CommandID);
+                    write.Write((UInt32)CommandData.Length);
+                    write.Write(CommandData);
+                    write.Write((byte)13);
+                }
+                
+                // TODO: Use sequence ID for in-flight packets
+                var written = await WriteData(packet);
+                if (written != packet.Length)
+                {
+                    throw new Exception("Failed to send request");
+                }
+
+                var data = await ReadData();
+                byte[] responseBytes;
+                using (MemoryStream stream = new MemoryStream(data))
+                using (BinaryReader read = new BinaryReader(stream))
+                {
+                    if (read.ReadByte() != 1)
+                        throw new Exception("Invalid response (no SOH)");
+                    if (read.ReadChars(4).ToString() != "AIDP")
+                        throw new Exception("Invalid response (wrong signature)");
+                    if (read.ReadUInt16() != sequence)
+                        throw new Exception("Invalid response (wrong sequence ID)");
+                    byte command = read.ReadByte();
+                    uint respLen = read.ReadUInt32();
+                    if (respLen > 8192)
+                        throw new Exception("Invalid response (too big)");
+
+                    responseBytes = read.ReadBytes((int)respLen);
+
+                    /*
+                    if (stream.ReadByte() != 13)
+                        throw new Exception("Invalid response (no terminator)");
+                    */
+                }
+
+                return responseBytes;
+            }
+
+            private ushort NextSequenceID()
+            {
+                if (_sequenceID == 65535)
+                    _sequenceID = 0;
+                return ++_sequenceID;
+            }
+
+            private async Task<int> WriteData(byte[] data)
+            {
+                return await _udpSocket.SendAsync(data, data.Length);
+            }
+
+            private async Task<byte[]> ReadData()
+            {
+                var cts = new CancellationTokenSource();
+                cts.CancelAfter(10000);
+
+                return await ReadData(cts.Token);
+            }
+
+            private async Task<byte[]> ReadData(CancellationToken token)
+            {
+                var tcs = new TaskCompletionSource<byte[]>();
+                token.Register(() => {
+                    tcs.TrySetCanceled();
+                });
+
+                var dataTask = _udpSocket.ReceiveAsync();
+
+                var completed = await Task.WhenAny(dataTask, tcs.Task);
+                if (completed == dataTask)
+                {
+                    var data = (await dataTask).Buffer;
+                    tcs.TrySetResult(data);
+                }
+                
+                return await tcs.Task;
+            }
+        }
+    }
+}
