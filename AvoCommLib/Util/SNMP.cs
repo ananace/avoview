@@ -94,10 +94,70 @@ namespace AvoCommLib
                     }
                 }
 
-                var buf = stream.GetBuffer();
+                var buf = stream.ToArray();
                 stream.Dispose();
 
                 return buf;
+            }
+
+            public static VbCollection DecodeVarBindList(byte[] Data)
+            {
+                VbCollection ret = new VbCollection();
+
+                using (var stream = new MemoryStream(Data))
+                using (var read = new BinaryReader(stream))
+                {
+                    while (true)
+                    {
+                        byte fieldID = read.ReadByte();
+                        ushort fieldLength = read.ReadUInt16();
+
+                        switch (fieldID)
+                        {
+                        case 1: // Error status
+                            {
+                                var errorStatus = read.ReadUInt16();
+                            } break;
+
+                        case 2: // Error type
+                            {
+                                var errorType = read.ReadUInt16();
+                            } break;
+
+                        case 3: // VarBind
+                            {
+                                var vb = DecodeVarBind(read.ReadBytes(fieldLength));
+                                ret.Add(vb);
+                            } break;
+                        }
+
+                        if (fieldID == 255 || read.PeekChar() < 0)
+                            break;
+                    }
+                }
+
+                return ret;
+            }
+
+            public static byte[] EncodeVarBindList(VbCollection VarBindList)
+            {
+                MemoryStream stream = new MemoryStream();
+
+                using (var write = new BinaryWriter(stream))
+                {
+                    foreach (var vb in VarBindList)
+                    {
+                        var bytes = EncodeVarBind(vb);
+                        write.Write((byte)1);
+                        write.Write((Int16)bytes.Length);
+                        write.Write(bytes);
+                    }
+                }
+
+                var data = stream.ToArray();
+                stream.Dispose();
+
+                return data;
             }
         }
     }
