@@ -123,7 +123,15 @@ ID 2:
   uint16_t - Error index
 
 ID 3:
-  uint8_t[Length] - Data
+  uint8_t[Length] - VarBind Data
+
+  VarBind data layout:
+    uint8_t - `6` - SNMP ASN type ID for OID
+    uint8_t - OID int count
+    int32_t[N] - OID
+    uint8_t - Value ID (SNMP ASN type ID)
+    uint16_t - Value length
+    uint8_t[N] - Value data
 
 ID 255: EOF
 }
