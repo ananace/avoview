@@ -6,8 +6,10 @@ namespace AvoREPL
     {
         static void Main(string[] args)
         {
-            var test = new AvoCommLib.Protocols.AIDP(new System.Net.IPEndPoint(new System.Net.IPAddress(new byte[] { 172, 31, 0, 245}), 3211));
-            test.Discover();
+            var appliance = new AvoCommLib.Appliance();
+            appliance.IPAddress = System.Net.IPAddress.Parse("172.31.0.245");
+
+            appliance.Discover();
 
             Console.WriteLine("Hello World!");
         }

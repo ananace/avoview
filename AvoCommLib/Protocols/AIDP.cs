@@ -34,43 +34,6 @@ namespace AvoCommLib
                 // _udpSocket.Client.RemoteEndPoint = endpoint;
             }
 
-            public void Discover()
-            {
-                var data = Request(0x01, new byte[] { 0xFF });
-                data.Wait();
-
-                byte fieldId;
-                byte[] lenBytes = new byte[2];
-                ushort fieldLength;
-                using (MemoryStream stream = new MemoryStream(data.Result))
-                using (BinaryReader read = new BinaryReader(stream))
-                while(true)
-                {
-                    fieldId = read.ReadByte();
-                    fieldLength = read.ReadUInt16();
-
-                    switch (fieldId)
-                    {
-                    case 1:
-                        {
-                            var model = read.ReadUInt16();
-
-                            Console.WriteLine($"Model: {model}");
-                        }
-                        break;
-
-                    case 255: return;
-
-                    default:
-                        {
-                            Console.WriteLine($"Unknown field ID {fieldId}");
-                            stream.Seek(fieldLength, SeekOrigin.Current);
-                        }
-                        break;
-                    }
-                }
-            }
-
             public async Task<byte[]> Request(byte CommandID, byte[] CommandData)
             {
                 var packet = new byte[CommandData.Length + HEADER_SIZE];
