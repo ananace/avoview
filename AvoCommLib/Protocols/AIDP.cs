@@ -83,7 +83,7 @@ namespace AvoCommLib
                 using (BinaryWriter write = new BinaryWriter(stream))
                 {
                     write.Write((byte)1);
-                    write.Write("AIDP");
+                    write.Write("AIDP".ToCharArray());
                     write.Write((UInt16)sequence);
                     write.Write((byte)CommandID);
                     write.Write((UInt32)CommandData.Length);
