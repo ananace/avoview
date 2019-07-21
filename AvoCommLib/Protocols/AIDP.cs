@@ -53,7 +53,7 @@ namespace AvoCommLib
                     write.Write(CommandData);
                     write.Write((byte)13);
                 }
-                
+
                 // TODO: Use sequence ID for in-flight packets
                 var written = await WriteData(packet);
                 if (written != packet.Length)
@@ -111,7 +111,8 @@ namespace AvoCommLib
             private async Task<byte[]> ReadData(CancellationToken token)
             {
                 var tcs = new TaskCompletionSource<byte[]>();
-                token.Register(() => {
+                token.Register(() =>
+                {
                     tcs.TrySetCanceled();
                 });
 
@@ -123,7 +124,7 @@ namespace AvoCommLib
                     var data = (await dataTask).Buffer;
                     tcs.TrySetResult(data);
                 }
-                
+
                 return await tcs.Task;
             }
         }

@@ -41,26 +41,26 @@ namespace AvoCommLib
                     var valueType = (FieldType)read.ReadByte();
                     var valueLen = read.ReadUInt16();
 
-                    switch(valueType)
+                    switch (valueType)
                     {
-                    default: ret.Value = null; break;
-                    case FieldType.Int32: ret.Value = new Integer32(read.ReadInt32()); break;
-                    case FieldType.String: ret.Value = new OctetString(read.ReadBytes(valueLen)); break;
-                    case FieldType.OID:
-                        oidIntCount = valueLen / sizeof(Int32);
-                        oidInts = new Int32[oidIntCount];
-                        for (int i = 0; i < oidIntCount; ++i)
-                            oidInts[i] = read.ReadInt32();
-                        ret.Value = new Oid(oidInts);
-                        break;
-                    case FieldType.IPAddress:
-                        if (valueLen != 4)
-                            throw new Exception("Invalid IP Address length");
-                        ret.Value = new IpAddress(read.ReadBytes(4));
-                        break;
-                    case FieldType.Counter32: ret.Value = new Counter32((UInt32)read.ReadInt32()); break;
-                    case FieldType.Gauge32: ret.Value = new Gauge32((UInt32)read.ReadInt32()); break;
-                    case FieldType.TimeTicks: ret.Value = new TimeTicks((UInt32)read.ReadInt32()); break;
+                        default: ret.Value = null; break;
+                        case FieldType.Int32: ret.Value = new Integer32(read.ReadInt32()); break;
+                        case FieldType.String: ret.Value = new OctetString(read.ReadBytes(valueLen)); break;
+                        case FieldType.OID:
+                            oidIntCount = valueLen / sizeof(Int32);
+                            oidInts = new Int32[oidIntCount];
+                            for (int i = 0; i < oidIntCount; ++i)
+                                oidInts[i] = read.ReadInt32();
+                            ret.Value = new Oid(oidInts);
+                            break;
+                        case FieldType.IPAddress:
+                            if (valueLen != 4)
+                                throw new Exception("Invalid IP Address length");
+                            ret.Value = new IpAddress(read.ReadBytes(4));
+                            break;
+                        case FieldType.Counter32: ret.Value = new Counter32((UInt32)read.ReadInt32()); break;
+                        case FieldType.Gauge32: ret.Value = new Gauge32((UInt32)read.ReadInt32()); break;
+                        case FieldType.TimeTicks: ret.Value = new TimeTicks((UInt32)read.ReadInt32()); break;
                     }
                 }
 
@@ -80,17 +80,17 @@ namespace AvoCommLib
                     write.Write((byte)vb.Type);
                     switch ((FieldType)vb.Type)
                     {
-                    default: write.Write((Int16)0); break;
-                    case FieldType.Int32: write.Write((Int32)(vb.Value as Integer32).Value); break;
-                    case FieldType.String: write.Write((vb.Value as OctetString).ToArray()); break;
-                    case FieldType.OID:
-                        foreach (var part in (vb.Value as Oid))
-                            write.Write((Int32)part);
-                        break;
-                    case FieldType.IPAddress: write.Write((vb.Value as IpAddress).ToArray()); break;
-                    case FieldType.Counter32: write.Write((Int32)(vb.Value as Counter32).Value); break;
-                    case FieldType.Gauge32: write.Write((Int32)(vb.Value as Counter32).Value); break;
-                    case FieldType.TimeTicks: write.Write((Int32)(vb.Value as Counter32).Value); break;
+                        default: write.Write((Int16)0); break;
+                        case FieldType.Int32: write.Write((Int32)(vb.Value as Integer32).Value); break;
+                        case FieldType.String: write.Write((vb.Value as OctetString).ToArray()); break;
+                        case FieldType.OID:
+                            foreach (var part in (vb.Value as Oid))
+                                write.Write((Int32)part);
+                            break;
+                        case FieldType.IPAddress: write.Write((vb.Value as IpAddress).ToArray()); break;
+                        case FieldType.Counter32: write.Write((Int32)(vb.Value as Counter32).Value); break;
+                        case FieldType.Gauge32: write.Write((Int32)(vb.Value as Counter32).Value); break;
+                        case FieldType.TimeTicks: write.Write((Int32)(vb.Value as Counter32).Value); break;
                     }
                 }
 
@@ -114,21 +114,24 @@ namespace AvoCommLib
 
                         switch (fieldID)
                         {
-                        case 1: // Error status
-                            {
-                                var errorStatus = read.ReadUInt16();
-                            } break;
+                            case 1: // Error status
+                                {
+                                    var errorStatus = read.ReadUInt16();
+                                }
+                                break;
 
-                        case 2: // Error type
-                            {
-                                var errorType = read.ReadUInt16();
-                            } break;
+                            case 2: // Error type
+                                {
+                                    var errorType = read.ReadUInt16();
+                                }
+                                break;
 
-                        case 3: // VarBind
-                            {
-                                var vb = DecodeVarBind(read.ReadBytes(fieldLength));
-                                ret.Add(vb);
-                            } break;
+                            case 3: // VarBind
+                                {
+                                    var vb = DecodeVarBind(read.ReadBytes(fieldLength));
+                                    ret.Add(vb);
+                                }
+                                break;
                         }
 
                         if (fieldID == 255 || read.PeekChar() < 0)

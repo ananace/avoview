@@ -30,67 +30,73 @@ namespace AvoCommLib
             ushort fieldLength;
             using (MemoryStream stream = new MemoryStream(Data))
             using (BinaryReader read = new BinaryReader(stream))
-            while(read.PeekChar() >= 0)
-            {
-                fieldId = read.ReadByte();
-                fieldLength = read.ReadUInt16();
-
-                switch (fieldId)
+                while (read.PeekChar() >= 0)
                 {
-                case 1:
+                    fieldId = read.ReadByte();
+                    fieldLength = read.ReadUInt16();
+
+                    switch (fieldId)
                     {
-                        Model = (Models)read.ReadUInt16();
-                        Console.WriteLine($"Model: {Model}");
+                        case 1:
+                            {
+                                Model = (Models)read.ReadUInt16();
+                                Console.WriteLine($"Model: {Model}");
+                            }
+                            break;
+
+                        case 2:
+                            {
+                                MacAddress = read.ReadBytes(6);
+                                Console.WriteLine($"MAC Address: {String.Join(":", MacAddress)}");
+                            }
+                            break;
+
+                        case 3:
+                            {
+                                IPAddress = new IPAddress(read.ReadBytes(fieldLength));
+                                Console.WriteLine($"IP Address: {IPAddress}");
+                            }
+                            break;
+
+                        case 4:
+                            {
+                                SubnetAddress = new IPAddress(read.ReadBytes(fieldLength));
+                                Console.WriteLine($"Subnet Address: {SubnetAddress}");
+                            }
+                            break;
+
+                        case 5:
+                            {
+                                GatewayAddress = new IPAddress(read.ReadBytes(fieldLength));
+                                Console.WriteLine($"Gateway Address: {GatewayAddress}");
+                            }
+                            break;
+
+                        case 6:
+                            {
+                                var stringLength = read.ReadUInt16();
+                                Hostname = new String(read.ReadChars(stringLength));
+                                Console.WriteLine($"Hostname: {Hostname}");
+                            }
+                            break;
+
+                        case 7:
+                            {
+                                var flags = read.ReadByte();
+                                Console.WriteLine($"Flags: {flags.ToString("X")}");
+                            }
+                            break;
+
+                        case 255: return;
+
+                        default:
+                            {
+                                Console.WriteLine($"Unknown field ID {fieldId}");
+                                stream.Seek(fieldLength, SeekOrigin.Current);
+                            }
+                            break;
                     }
-                    break;
-                
-                case 2:
-                    {
-                        MacAddress = read.ReadBytes(6);
-                        Console.WriteLine($"MAC Address: {String.Join(":", MacAddress)}");
-                    } break;
-
-                case 3:
-                    {
-                        IPAddress = new IPAddress(read.ReadBytes(fieldLength));
-                        Console.WriteLine($"IP Address: {IPAddress}");
-                    } break;
-
-                case 4:
-                    {
-                        SubnetAddress = new IPAddress(read.ReadBytes(fieldLength));
-                        Console.WriteLine($"Subnet Address: {SubnetAddress}");
-                    } break;
-
-                case 5:
-                    {
-                        GatewayAddress = new IPAddress(read.ReadBytes(fieldLength));
-                        Console.WriteLine($"Gateway Address: {GatewayAddress}");
-                    } break;
-
-                case 6:
-                    {
-                        var stringLength = read.ReadUInt16();
-                        Hostname = new String(read.ReadChars(stringLength));
-                        Console.WriteLine($"Hostname: {Hostname}");
-                    } break;
-
-                case 7:
-                    {
-                        var flags = read.ReadByte();
-                        Console.WriteLine($"Flags: {flags.ToString("X")}");
-                    } break;
-
-                case 255: return;
-
-                default:
-                    {
-                        Console.WriteLine($"Unknown field ID {fieldId}");
-                        stream.Seek(fieldLength, SeekOrigin.Current);
-                    }
-                    break;
                 }
-            }
         }
     }
 }
