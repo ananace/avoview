@@ -1,9 +1,12 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using AvoCommLib.Util;
+using SnmpSharpNet;
 
 namespace AvoCommLib
 {
@@ -86,6 +89,39 @@ namespace AvoCommLib
                 }
 
                 return responseBytes;
+            }
+
+            public async Task<Vb> SnmpGet(Vb varBind)
+            {
+                var ret = await snmpRequest(new VbCollection(new[] { varBind }), 16);
+                return ret.First();
+            }
+
+            public async Task<Vb> SnmpGetNext(Vb varBind)
+            {
+                var ret = await snmpRequest(new VbCollection(new[] { varBind }), 17);
+                return ret.First();
+            }
+
+            public async Task<VbCollection> SnmpGet(VbCollection varBindList)
+            {
+                return await snmpRequest(varBindList, 16);
+            }
+
+            public async Task<VbCollection> SnmpGetNext(VbCollection varBindList)
+            {
+                return await snmpRequest(varBindList, 17);
+            }
+
+            public async Task<VbCollection> snmpRequest(VbCollection varBindList, int method)
+            {
+                if (method != 16 && method != 17)
+                    throw new ArgumentException("Method must be one of 16, 17", nameof(method));
+
+                var response = await Request((byte)method, SNMP.EncodeVarBindList(varBindList));
+                var ret = SNMP.DecodeVarBindList(response);
+
+                return ret;
             }
 
             private ushort NextSequenceID()
