@@ -30,7 +30,7 @@ namespace AvoCommLib
                     if (nameType != FieldType.OID)
                         throw new Exception("Invalid OID type for varbind");
 
-                    var nameLen = read.ReadByte();
+                    var nameLen = read.ReadInt16();
                     var oidIntCount = nameLen / sizeof(Int32);
                     var oidInts = new Int32[oidIntCount];
                     for (int i = 0; i < oidIntCount; ++i)
@@ -43,7 +43,8 @@ namespace AvoCommLib
 
                     switch (valueType)
                     {
-                        default: ret.Value = null; break;
+                        default: break;
+
                         case FieldType.Int32: ret.Value = new Integer32(read.ReadInt32()); break;
                         case FieldType.String: ret.Value = new OctetString(read.ReadBytes(valueLen)); break;
                         case FieldType.OID:
@@ -74,11 +75,12 @@ namespace AvoCommLib
                 using (var write = new BigEndianWriter(stream))
                 {
                     write.Write((byte)FieldType.OID);
-                    write.Write((Int32)vb.Oid.Length * sizeof(Int32));
+                    write.Write((Int16)(vb.Oid.Length * sizeof(Int32)));
                     foreach (var part in vb.Oid)
                         write.Write((Int32)part);
-                    write.Write((byte)vb.Type);
-                    switch ((FieldType)vb.Type)
+
+                    write.Write((byte)vb.Value.Type);
+                    switch ((FieldType)vb.Value.Type)
                     {
                         default: write.Write((Int16)0); break;
                         case FieldType.Int32: write.Write((Int32)(vb.Value as Integer32).Value); break;
@@ -110,19 +112,24 @@ namespace AvoCommLib
                     while (true)
                     {
                         byte fieldID = read.ReadByte();
+                        if (fieldID == 255)
+                            break;
+
                         ushort fieldLength = read.ReadUInt16();
 
                         switch (fieldID)
                         {
                             case 1: // Error status
                                 {
-                                    var errorStatus = read.ReadUInt16();
+                                    var errorStatus = (Enums.AIDPError)read.ReadUInt16();
+                                    Console.WriteLine($"Error status: {errorStatus}");
                                 }
                                 break;
 
-                            case 2: // Error type
+                            case 2: // Error
                                 {
-                                    var errorType = read.ReadUInt16();
+                                    var errorType = read.ReadUInt16() == 1;
+                                    Console.WriteLine($"Error: {errorType}");
                                 }
                                 break;
 
@@ -155,6 +162,8 @@ namespace AvoCommLib
                         write.Write((Int16)bytes.Length);
                         write.Write(bytes);
                     }
+
+                    write.Write((byte)255);
                 }
 
                 var data = stream.ToArray();

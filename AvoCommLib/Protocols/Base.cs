@@ -38,7 +38,7 @@ namespace AvoCommLib
                     write.Write((byte)13);
                 }
 
-                Console.WriteLine("Writing data:");
+                Console.WriteLine($"Writing {packet.Length}B data:");
                 Console.WriteLine(String.Join(" ", packet.Select((b) => b.ToString("X2"))));
 
                 // TODO: Use sequence ID for in-flight packets
@@ -50,7 +50,7 @@ namespace AvoCommLib
 
                 var data = await ReadData();
 
-                Console.WriteLine("Read data:");
+                Console.WriteLine($"Read {data.Length}B data:");
                 Console.WriteLine(String.Join(" ", data.Select((b) => b.ToString("X2"))));
 
                 byte[] responseBytes;
@@ -79,29 +79,39 @@ namespace AvoCommLib
                 return responseBytes;
             }
 
+            public async Task<Vb> SnmpGet(Oid oid)
+            {
+                return await SnmpGet(new Vb(oid));
+            }
+
             public async Task<Vb> SnmpGet(Vb varBind)
             {
-                var ret = await snmpRequest(new VbCollection(new[] { varBind }), 16);
+                var ret = await SnmpRequest(new VbCollection(new[] { varBind }), 16);
                 return ret.First();
+            }
+
+            public async Task<Vb> SnmpGetNext(Oid oid)
+            {
+                return await SnmpGet(new Vb(oid));
             }
 
             public async Task<Vb> SnmpGetNext(Vb varBind)
             {
-                var ret = await snmpRequest(new VbCollection(new[] { varBind }), 17);
+                var ret = await SnmpRequest(new VbCollection(new[] { varBind }), 17);
                 return ret.First();
             }
 
             public async Task<VbCollection> SnmpGet(VbCollection varBindList)
             {
-                return await snmpRequest(varBindList, 16);
+                return await SnmpRequest(varBindList, 16);
             }
 
             public async Task<VbCollection> SnmpGetNext(VbCollection varBindList)
             {
-                return await snmpRequest(varBindList, 17);
+                return await SnmpRequest(varBindList, 17);
             }
 
-            public async Task<VbCollection> snmpRequest(VbCollection varBindList, int method)
+            public async Task<VbCollection> SnmpRequest(VbCollection varBindList, int method)
             {
                 if (method != 16 && method != 17)
                     throw new ArgumentException("Method must be one of 16, 17", nameof(method));
