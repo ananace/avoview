@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using SnmpSharpNet;
-using BinaryEncoding;
 
 namespace AvoCommLib
 {
@@ -25,7 +24,7 @@ namespace AvoCommLib
                 Vb ret = new Vb();
 
                 using (var stream = new MemoryStream(Data))
-                using (var read = new BinaryReader(stream))
+                using (var read = new BigEndianReader(stream))
                 {
                     var nameType = (FieldType)read.ReadByte();
                     if (nameType != FieldType.OID)
@@ -35,12 +34,12 @@ namespace AvoCommLib
                     var oidIntCount = nameLen / sizeof(Int32);
                     var oidInts = new Int32[oidIntCount];
                     for (int i = 0; i < oidIntCount; ++i)
-                        oidInts[i] = Binary.BigEndian.GetInt32(read.ReadBytes(4));
+                        oidInts[i] = read.ReadInt32();
 
                     ret.Oid = new Oid(oidInts);
 
                     var valueType = (FieldType)read.ReadByte();
-                    var valueLen = Binary.BigEndian.GetUInt16(read.ReadBytes(2));
+                    var valueLen = read.ReadUInt16();
 
                     switch (valueType)
                     {
@@ -72,7 +71,7 @@ namespace AvoCommLib
             {
                 var stream = new MemoryStream();
 
-                using (var write = new BinaryWriter(stream))
+                using (var write = new BigEndianWriter(stream))
                 {
                     write.Write((byte)FieldType.OID);
                     write.Write((Int32)vb.Oid.Length * sizeof(Int32));
@@ -106,7 +105,7 @@ namespace AvoCommLib
                 VbCollection ret = new VbCollection();
 
                 using (var stream = new MemoryStream(Data))
-                using (var read = new BinaryReader(stream))
+                using (var read = new BigEndianReader(stream))
                 {
                     while (true)
                     {
@@ -147,7 +146,7 @@ namespace AvoCommLib
             {
                 MemoryStream stream = new MemoryStream();
 
-                using (var write = new BinaryWriter(stream))
+                using (var write = new BigEndianWriter(stream))
                 {
                     foreach (var vb in VarBindList)
                     {

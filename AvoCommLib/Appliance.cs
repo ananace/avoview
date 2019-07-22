@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using AvoCommLib.Enums;
-using BinaryEncoding;
+using AvoCommLib.Util;
 
 namespace AvoCommLib
 {
@@ -31,21 +31,21 @@ namespace AvoCommLib
             byte fieldId;
             byte[] lenBytes = new byte[2];
             ushort fieldLength;
-            using (MemoryStream stream = new MemoryStream(Data))
-            using (BinaryReader read = new BinaryReader(stream))
+            using (var stream = new MemoryStream(Data))
+            using (var read = new BigEndianReader(stream))
                 while (read.PeekChar() >= 0)
                 {
                     fieldId = read.ReadByte();
                     if (fieldId == 255)
                         break;
 
-                    fieldLength = Binary.BigEndian.GetUInt16(read.ReadBytes(2));
+                    fieldLength = read.ReadUInt16();
 
                     switch (fieldId)
                     {
                         case 1:
                             {
-                                Model = (Models)Binary.BigEndian.GetUInt16(read.ReadBytes(2));
+                                Model = (Models)read.ReadUInt16();
                                 Console.WriteLine($"Model: {Model}");
                             }
                             break;
@@ -80,8 +80,7 @@ namespace AvoCommLib
 
                         case 6:
                             {
-                                var stringLength = Binary.BigEndian.GetUInt16(read.ReadBytes(2));
-                                Hostname = new String(read.ReadChars(stringLength));
+                                Hostname = new String(read.ReadChars(read.ReadUInt16()));
                                 Console.WriteLine($"Hostname: {Hostname}");
                             }
                             break;
@@ -89,7 +88,7 @@ namespace AvoCommLib
                         case 7:
                             {
                                 var flags = read.ReadByte();
-                                Console.WriteLine($"Flags: {flags.ToString("X")}");
+                                Console.WriteLine($"Flags: {flags.ToString("X2")}");
                             }
                             break;
 

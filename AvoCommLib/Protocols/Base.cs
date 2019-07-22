@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AvoCommLib.Util;
-using BinaryEncoding;
 using SnmpSharpNet;
 
 namespace AvoCommLib
@@ -27,14 +26,14 @@ namespace AvoCommLib
                 byte[] seqBytes = BitConverter.GetBytes((UInt16)sequence);
                 byte[] lenBytes = BitConverter.GetBytes((UInt32)CommandData.Length);
 
-                using (MemoryStream stream = new MemoryStream(packet))
-                using (BinaryWriter write = new BinaryWriter(stream))
+                using (var stream = new MemoryStream(packet))
+                using (var write = new BigEndianWriter(stream))
                 {
                     write.Write((byte)1);
                     write.Write("AIDP".ToCharArray());
-                    write.Write(Binary.BigEndian.GetBytes((UInt16)sequence));
+                    write.Write((UInt16)sequence);
                     write.Write((byte)CommandID);
-                    write.Write(Binary.BigEndian.GetBytes((UInt32)CommandData.Length));
+                    write.Write((UInt32)CommandData.Length);
                     write.Write(CommandData);
                     write.Write((byte)13);
                 }
@@ -55,17 +54,17 @@ namespace AvoCommLib
                 Console.WriteLine(String.Join(" ", data.Select((b) => b.ToString("X2"))));
 
                 byte[] responseBytes;
-                using (MemoryStream stream = new MemoryStream(data))
-                using (BinaryReader read = new BinaryReader(stream))
+                using (var stream = new MemoryStream(data))
+                using (var read = new BigEndianReader(stream))
                 {
                     if (read.ReadByte() != 1)
                         throw new Exception("Invalid response (no SOH)");
-                    if (read.ReadUInt32() != 0x50444941)
+                    if (read.ReadUInt32() != 0x41494450)
                         throw new Exception("Invalid response (wrong signature)");
-                    if (Binary.BigEndian.GetUInt16(read.ReadBytes(2)) != sequence)
+                    if (read.ReadUInt16() != sequence)
                         throw new Exception("Invalid response (wrong sequence ID)");
                     byte command = read.ReadByte();
-                    uint respLen = Binary.BigEndian.GetUInt32(read.ReadBytes(4));
+                    uint respLen = read.ReadUInt32();
                     if (respLen > 8192)
                         throw new Exception("Invalid response (too big)");
 
