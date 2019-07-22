@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using SnmpSharpNet;
 
 namespace AvoREPL
@@ -31,35 +32,33 @@ namespace AvoREPL
                         }
                         break;
 
+                    case "snmpnext":
+                        goto case "snmp";
                     case "snmp":
                         {
                             var ip = System.Net.IPAddress.Parse(parts[1].ToLower());
-                            var oid = new Oid(parts[2]);
+                            var vbl = new VbCollection();
 
-                            var vb = new Vb(oid);
+                            foreach(var part in parts.Skip(1))
+                            {
+                                var oid = new Oid(part);
+                                var vb = new Vb(oid);
 
-                            var aidp = new AvoCommLib.Protocols.AIDP(ip);
-
-                            var ret = aidp.SnmpGet(oid);
-                            ret.Wait();
-
-                            Console.WriteLine($"{oid}: {ret.Result.Value}");
-                        }
-                        break;
-
-                    case "snmpnext":
-                        {
-                            var ip = System.Net.IPAddress.Parse(parts[1].ToLower());
-                            var oid = new Oid(parts[2]);
-
-                            var vb = new Vb(oid);
+                                vbl.Add(vb);
+                            }
 
                             var aidp = new AvoCommLib.Protocols.AIDP(ip);
 
-                            var ret = aidp.SnmpGetNext(oid);
+                            Task<VbCollection> ret;
+                            if (parts.First().ToLower() == "snmp")
+                                ret = aidp.SnmpGet(vbl);
+                            else
+                                ret = aidp.SnmpGetNext(vbl);
+
                             ret.Wait();
 
-                            Console.WriteLine($"{oid}: {ret.Result.Value}");
+                            foreach (var vb in ret.Result)
+                                Console.WriteLine($"{vb.Oid}: {vb.Value}");
                         }
                         break;
 
