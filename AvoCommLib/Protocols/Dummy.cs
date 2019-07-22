@@ -10,9 +10,6 @@ namespace AvoCommLib
         {
             protected override async Task<int> WriteData(byte[] data)
             {
-                Console.WriteLine("Writing data:");
-                Console.WriteLine(String.Join(" ", data.Select((b) => b.ToString("X"))));
-
                 await Task.Yield();
                 return data.Length;
             }

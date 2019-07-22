@@ -1,7 +1,9 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using AvoCommLib.Enums;
+using BinaryEncoding;
 
 namespace AvoCommLib
 {
@@ -19,8 +21,9 @@ namespace AvoCommLib
         {
             var aidp = new Protocols.AIDP(IPAddress);
 
-            aidp.Request(0x01, new byte[] { 0xFF })
-                .ContinueWith((Data) => ParseDiscoveryData(Data.Result));
+            var req = aidp.Request(0x01, new byte[] { 0xFF });
+            req.Wait();
+            ParseDiscoveryData(req.Result);
         }
 
         void ParseDiscoveryData(byte[] Data)
@@ -33,13 +36,16 @@ namespace AvoCommLib
                 while (read.PeekChar() >= 0)
                 {
                     fieldId = read.ReadByte();
-                    fieldLength = read.ReadUInt16();
+                    if (fieldId == 255)
+                        break;
+
+                    fieldLength = Binary.BigEndian.GetUInt16(read.ReadBytes(2));
 
                     switch (fieldId)
                     {
                         case 1:
                             {
-                                Model = (Models)read.ReadUInt16();
+                                Model = (Models)Binary.BigEndian.GetUInt16(read.ReadBytes(2));
                                 Console.WriteLine($"Model: {Model}");
                             }
                             break;
@@ -47,7 +53,7 @@ namespace AvoCommLib
                         case 2:
                             {
                                 MacAddress = read.ReadBytes(6);
-                                Console.WriteLine($"MAC Address: {String.Join(":", MacAddress)}");
+                                Console.WriteLine($"MAC Address: {String.Join(":", MacAddress.Select((b) => b.ToString("X2")))}");
                             }
                             break;
 
@@ -74,7 +80,7 @@ namespace AvoCommLib
 
                         case 6:
                             {
-                                var stringLength = read.ReadUInt16();
+                                var stringLength = Binary.BigEndian.GetUInt16(read.ReadBytes(2));
                                 Hostname = new String(read.ReadChars(stringLength));
                                 Console.WriteLine($"Hostname: {Hostname}");
                             }

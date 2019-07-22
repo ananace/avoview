@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using SnmpSharpNet;
+using BinaryEncoding;
 
 namespace AvoCommLib
 {
@@ -34,12 +35,12 @@ namespace AvoCommLib
                     var oidIntCount = nameLen / sizeof(Int32);
                     var oidInts = new Int32[oidIntCount];
                     for (int i = 0; i < oidIntCount; ++i)
-                        oidInts[i] = read.ReadInt32();
+                        oidInts[i] = Binary.BigEndian.GetInt32(read.ReadBytes(4));
 
                     ret.Oid = new Oid(oidInts);
 
                     var valueType = (FieldType)read.ReadByte();
-                    var valueLen = read.ReadUInt16();
+                    var valueLen = Binary.BigEndian.GetUInt16(read.ReadBytes(2));
 
                     switch (valueType)
                     {
