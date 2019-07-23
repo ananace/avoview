@@ -26,6 +26,19 @@ namespace AvoCommLib
             ParseDiscoveryData(req.Result);
         }
 
+        public string SystemName
+        {
+            get
+            {
+                var aidp = new Protocols.AIDP(IPAddress);
+                var ret = aidp.SnmpGet(new SnmpSharpNet.Oid("1.3.6.1.2.1.1.5.0"));
+
+                ret.Wait();
+
+                return ret.Result.Value.ToString();
+            }
+        }
+
         void ParseDiscoveryData(byte[] Data)
         {
             byte fieldId;

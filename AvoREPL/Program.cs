@@ -29,6 +29,8 @@ namespace AvoREPL
                             var appliance = new AvoCommLib.Appliance();
                             appliance.IPAddress = ip;
                             appliance.Discover();
+
+                            // Console.WriteLine(appliance.SystemName);
                         }
                         break;
 
@@ -39,9 +41,10 @@ namespace AvoREPL
                             var ip = System.Net.IPAddress.Parse(parts[1].ToLower());
                             var vbl = new VbCollection();
 
-                            foreach(var part in parts.Skip(1))
+                            foreach(var part in parts.Skip(2))
                             {
                                 var oid = new Oid(part);
+                                Console.WriteLine($"Adding Oid: {oid}");
                                 var vb = new Vb(oid);
 
                                 vbl.Add(vb);
@@ -71,8 +74,8 @@ namespace AvoREPL
                         Console.WriteLine();
                         Console.WriteLine("- help");
                         Console.WriteLine("- discover IP");
-                        Console.WriteLine("- snmp IP OID");
-                        Console.WriteLine("- snmpnext IP OID");
+                        Console.WriteLine("- snmp IP OID...");
+                        Console.WriteLine("- snmpnext IP OID...");
                         break;
                     }
                 }
