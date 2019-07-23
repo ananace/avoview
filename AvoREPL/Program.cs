@@ -1,7 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SnmpSharpNet;
+using Lextm.SharpSnmpLib;
 
 namespace AvoREPL
 {
@@ -23,60 +24,60 @@ namespace AvoREPL
                 {
                     switch (parts.First().ToLower())
                     {
-                    case "discover":
-                        {
-                            var ip = System.Net.IPAddress.Parse(parts[1].ToLower());
-                            var appliance = new AvoCommLib.Appliance();
-                            appliance.IPAddress = ip;
-                            appliance.Discover();
-
-                            // Console.WriteLine(appliance.SystemName);
-                        }
-                        break;
-
-                    case "snmpnext":
-                        goto case "snmp";
-                    case "snmp":
-                        {
-                            var ip = System.Net.IPAddress.Parse(parts[1].ToLower());
-                            var vbl = new VbCollection();
-
-                            foreach(var part in parts.Skip(2))
+                        case "discover":
                             {
-                                var oid = new Oid(part);
-                                Console.WriteLine($"Adding Oid: {oid}");
-                                var vb = new Vb(oid);
+                                var ip = System.Net.IPAddress.Parse(parts[1].ToLower());
+                                var appliance = new AvoCommLib.Appliance();
+                                appliance.IPAddress = ip;
+                                appliance.Discover();
 
-                                vbl.Add(vb);
+                                // Console.WriteLine(appliance.SystemName);
                             }
+                            break;
 
-                            var aidp = new AvoCommLib.Protocols.AIDP(ip);
+                        case "snmpnext":
+                            goto case "snmp";
+                        case "snmp":
+                            {
+                                var ip = System.Net.IPAddress.Parse(parts[1].ToLower());
+                                var vbl = new List<Variable>();
 
-                            Task<VbCollection> ret;
-                            if (parts.First().ToLower() == "snmp")
-                                ret = aidp.SnmpGet(vbl);
-                            else
-                                ret = aidp.SnmpGetNext(vbl);
+                                foreach (var part in parts.Skip(2))
+                                {
+                                    var oid = new ObjectIdentifier(part);
+                                    Console.WriteLine($"Adding Oid: {oid}");
+                                    var vb = new Variable(oid);
 
-                            ret.Wait();
+                                    vbl.Add(vb);
+                                }
 
-                            foreach (var vb in ret.Result)
-                                Console.WriteLine($"{vb.Oid}: {vb.Value}");
-                        }
-                        break;
+                                var aidp = new AvoCommLib.Protocols.AIDP(ip);
 
-                    default:
-                        Console.WriteLine($"Unknown input: \"{parts.First()}\"");
-                        goto case "help";
+                                Task<List<Variable>> ret;
+                                if (parts.First().ToLower() == "snmp")
+                                    ret = aidp.SnmpGet(vbl);
+                                else
+                                    ret = aidp.SnmpGetNext(vbl);
 
-                    case "help":
-                        Console.WriteLine("Available commands:");
-                        Console.WriteLine();
-                        Console.WriteLine("- help");
-                        Console.WriteLine("- discover IP");
-                        Console.WriteLine("- snmp IP OID...");
-                        Console.WriteLine("- snmpnext IP OID...");
-                        break;
+                                ret.Wait();
+
+                                foreach (var vb in ret.Result)
+                                    Console.WriteLine($"{vb.Id}: {vb.Data}");
+                            }
+                            break;
+
+                        default:
+                            Console.WriteLine($"Unknown input: \"{parts.First()}\"");
+                            goto case "help";
+
+                        case "help":
+                            Console.WriteLine("Available commands:");
+                            Console.WriteLine();
+                            Console.WriteLine("- help");
+                            Console.WriteLine("- discover IP");
+                            Console.WriteLine("- snmp IP OID...");
+                            Console.WriteLine("- snmpnext IP OID...");
+                            break;
                     }
                 }
                 catch (Exception ex)

@@ -1,12 +1,8 @@
 using System;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using AvoCommLib.Util;
-using SnmpSharpNet;
 
 namespace AvoCommLib
 {

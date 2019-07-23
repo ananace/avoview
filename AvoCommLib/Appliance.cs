@@ -31,11 +31,11 @@ namespace AvoCommLib
             get
             {
                 var aidp = new Protocols.AIDP(IPAddress);
-                var ret = aidp.SnmpGet(new SnmpSharpNet.Oid("1.3.6.1.2.1.1.5.0"));
+                var ret = aidp.SnmpGet(new Lextm.SharpSnmpLib.ObjectIdentifier("1.3.6.1.2.1.1.5.0"));
 
                 ret.Wait();
 
-                return ret.Result.Value.ToString();
+                return ret.Result.Data.ToString();
             }
         }
 

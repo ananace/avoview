@@ -1,6 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
-using SnmpSharpNet;
+using Lextm.SharpSnmpLib;
 
 namespace AvoCommLib
 {
@@ -19,10 +20,8 @@ namespace AvoCommLib
                 TimeTicks = 67
             }
 
-            public static Vb DecodeVarBind(byte[] Data)
+            public static Variable DecodeVarBind(byte[] Data)
             {
-                Vb ret = new Vb();
-
                 using (var stream = new MemoryStream(Data))
                 using (var read = new BigEndianReader(stream))
                 {
@@ -32,11 +31,11 @@ namespace AvoCommLib
 
                     var nameLen = read.ReadInt16();
                     var oidIntCount = nameLen / sizeof(Int32);
-                    var oidInts = new Int32[oidIntCount];
+                    var oidInts = new UInt32[oidIntCount];
                     for (int i = 0; i < oidIntCount; ++i)
-                        oidInts[i] = read.ReadInt32();
+                        oidInts[i] = (UInt32)read.ReadInt32();
 
-                    ret.Oid = new Oid(oidInts);
+                    var oid = new ObjectIdentifier(oidInts);
 
                     var valueType = (FieldType)read.ReadByte();
                     var valueLen = read.ReadUInt16();
@@ -45,54 +44,75 @@ namespace AvoCommLib
                     {
                         default: break;
 
-                        case FieldType.Int32: ret.Value = new Integer32(read.ReadInt32()); break;
-                        case FieldType.String: ret.Value = new OctetString(read.ReadBytes(valueLen)); break;
+                        case FieldType.Int32: return new Variable(oid, new Integer32(read.ReadInt32()));
+                        case FieldType.String: return new Variable(oid, new OctetString(read.ReadBytes(valueLen)));
                         case FieldType.OID:
                             oidIntCount = valueLen / sizeof(Int32);
-                            oidInts = new Int32[oidIntCount];
+                            oidInts = new UInt32[oidIntCount];
                             for (int i = 0; i < oidIntCount; ++i)
-                                oidInts[i] = read.ReadInt32();
-                            ret.Value = new Oid(oidInts);
-                            break;
+                                oidInts[i] = (UInt32)read.ReadInt32();
+                            return new Variable(oid, new ObjectIdentifier(oidInts));
                         case FieldType.IPAddress:
                             if (valueLen != 4)
                                 throw new Exception("Invalid IP Address length");
-                            ret.Value = new IpAddress(read.ReadBytes(4));
-                            break;
-                        case FieldType.Counter32: ret.Value = new Counter32((UInt32)read.ReadInt32()); break;
-                        case FieldType.Gauge32: ret.Value = new Gauge32((UInt32)read.ReadInt32()); break;
-                        case FieldType.TimeTicks: ret.Value = new TimeTicks((UInt32)read.ReadInt32()); break;
+                            return new Variable(oid, new IP(read.ReadBytes(4)));
+                        case FieldType.Counter32: return new Variable(oid, new Counter32((UInt32)read.ReadInt32()));
+                        case FieldType.Gauge32: return new Variable(oid, new Gauge32((UInt32)read.ReadInt32()));
+                        case FieldType.TimeTicks: return new Variable(oid, new TimeTicks((UInt32)read.ReadInt32()));
                     }
                 }
 
-                return ret;
+                return null;
             }
 
-            public static byte[] EncodeVarBind(Vb vb)
+            public static byte[] EncodeVarBind(Variable vb)
             {
                 var stream = new MemoryStream();
 
                 using (var write = new BigEndianWriter(stream))
                 {
+                    var idNums = vb.Id.ToNumerical();
+
                     write.Write((byte)FieldType.OID);
-                    write.Write((Int16)(vb.Oid.Length * sizeof(Int32)));
-                    foreach (var part in vb.Oid)
+                    write.Write((Int16)(idNums.Length * sizeof(Int32)));
+                    foreach (var part in idNums)
                         write.Write((Int32)part);
 
-                    write.Write((byte)vb.Value.Type);
-                    switch ((FieldType)vb.Value.Type)
+                    write.Write((byte)vb.Data.TypeCode);
+                    switch ((FieldType)vb.Data.TypeCode)
                     {
-                        default: write.Write((Int16)0); break;
-                        case FieldType.Int32: write.Write((Int32)(vb.Value as Integer32).Value); break;
-                        case FieldType.String: write.Write((vb.Value as OctetString).ToArray()); break;
+                        default:
+                            write.Write((Int16)0);
+                            break;
+                        case FieldType.Int32:
+                            write.Write((Int16)sizeof(Int32));
+                            write.Write((Int32)(vb.Data as Integer32).ToInt32());
+                            break;
+                        case FieldType.String:
+                            write.Write((Int16)(vb.Data as OctetString).ToBytes().Length);
+                            write.Write((vb.Data as OctetString).ToBytes());
+                            break;
                         case FieldType.OID:
-                            foreach (var part in (vb.Value as Oid))
+                            write.Write((Int16)((vb.Data as ObjectIdentifier).ToNumerical().Length * sizeof(Int32)));
+                            foreach (var part in (vb.Data as ObjectIdentifier).ToNumerical())
                                 write.Write((Int32)part);
                             break;
-                        case FieldType.IPAddress: write.Write((vb.Value as IpAddress).ToArray()); break;
-                        case FieldType.Counter32: write.Write((Int32)(vb.Value as Counter32).Value); break;
-                        case FieldType.Gauge32: write.Write((Int32)(vb.Value as Counter32).Value); break;
-                        case FieldType.TimeTicks: write.Write((Int32)(vb.Value as Counter32).Value); break;
+                        case FieldType.IPAddress:
+                            write.Write((Int16)(vb.Data as IP).GetRaw().Length);
+                            write.Write((vb.Data as IP).GetRaw());
+                            break;
+                        case FieldType.Counter32:
+                            write.Write((Int16)sizeof(Int32));
+                            write.Write((Int32)(vb.Data as Counter32).ToUInt32());
+                            break;
+                        case FieldType.Gauge32:
+                            write.Write((Int16)sizeof(Int32));
+                            write.Write((Int32)(vb.Data as Gauge32).ToUInt32());
+                            break;
+                        case FieldType.TimeTicks:
+                            write.Write((Int16)sizeof(Int32));
+                            write.Write((Int32)(vb.Data as TimeTicks).ToUInt32());
+                            break;
                     }
                 }
 
@@ -102,9 +122,9 @@ namespace AvoCommLib
                 return buf;
             }
 
-            public static VbCollection DecodeVarBindList(byte[] Data)
+            public static List<Variable> DecodeVarBindList(byte[] Data)
             {
-                VbCollection ret = new VbCollection();
+                List<Variable> ret = new List<Variable>();
 
                 using (var stream = new MemoryStream(Data))
                 using (var read = new BigEndianReader(stream))
@@ -116,7 +136,6 @@ namespace AvoCommLib
                             break;
 
                         ushort fieldLength = read.ReadUInt16();
-
                         switch (fieldID)
                         {
                             case 1: // Error status
@@ -149,7 +168,7 @@ namespace AvoCommLib
                 return ret;
             }
 
-            public static byte[] EncodeVarBindList(VbCollection VarBindList)
+            public static byte[] EncodeVarBindList(List<Variable> VarBindList)
             {
                 MemoryStream stream = new MemoryStream();
 

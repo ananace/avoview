@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SnmpSharpNetStandard" Version="0.10.0" />
+    <PackageReference Include="Lextm.SharpSnmpLib" Version="11.2.0" />
     <PackageReference Include="BinaryEncoding" Version="1.5.0" />
   </ItemGroup>
 

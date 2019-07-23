@@ -1,9 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AvoCommLib.Util;
-using SnmpSharpNet;
+using Lextm.SharpSnmpLib;
 
 namespace AvoCommLib
 {
@@ -79,39 +80,39 @@ namespace AvoCommLib
                 return responseBytes;
             }
 
-            public async Task<Vb> SnmpGet(Oid oid)
+            public async Task<Variable> SnmpGet(ObjectIdentifier oid)
             {
-                return await SnmpGet(new Vb(oid));
+                return await SnmpGet(new Variable(oid));
             }
 
-            public async Task<Vb> SnmpGet(Vb varBind)
+            public async Task<Variable> SnmpGet(Variable varBind)
             {
-                var ret = await SnmpRequest(new VbCollection(new[] { varBind }), 16);
+                var ret = await SnmpRequest(new List<Variable>(new[] { varBind }), 16);
                 return ret.First();
             }
 
-            public async Task<Vb> SnmpGetNext(Oid oid)
+            public async Task<Variable> SnmpGetNext(ObjectIdentifier oid)
             {
-                return await SnmpGet(new Vb(oid));
+                return await SnmpGet(new Variable(oid));
             }
 
-            public async Task<Vb> SnmpGetNext(Vb varBind)
+            public async Task<Variable> SnmpGetNext(Variable varBind)
             {
-                var ret = await SnmpRequest(new VbCollection(new[] { varBind }), 17);
+                var ret = await SnmpRequest(new List<Variable>(new[] { varBind }), 17);
                 return ret.First();
             }
 
-            public async Task<VbCollection> SnmpGet(VbCollection varBindList)
+            public async Task<List<Variable>> SnmpGet(List<Variable> varBindList)
             {
                 return await SnmpRequest(varBindList, 16);
             }
 
-            public async Task<VbCollection> SnmpGetNext(VbCollection varBindList)
+            public async Task<List<Variable>> SnmpGetNext(List<Variable> varBindList)
             {
                 return await SnmpRequest(varBindList, 17);
             }
 
-            public async Task<VbCollection> SnmpRequest(VbCollection varBindList, int method)
+            public async Task<List<Variable>> SnmpRequest(List<Variable> varBindList, int method)
             {
                 if (method != 16 && method != 17)
                     throw new ArgumentException("Method must be one of 16, 17", nameof(method));
