@@ -39,8 +39,10 @@ namespace AvoCommLib
                     write.Write((byte)13);
                 }
 
+                /*
                 Console.WriteLine($"Writing {packet.Length}B data:");
                 Console.WriteLine(String.Join(" ", packet.Select((b) => b.ToString("X2"))));
+                */
 
                 // TODO: Use sequence ID for in-flight packets
                 var written = await WriteData(packet);
@@ -51,8 +53,10 @@ namespace AvoCommLib
 
                 var data = await ReadData();
 
+                /*
                 Console.WriteLine($"Read {data.Length}B data:");
                 Console.WriteLine(String.Join(" ", data.Select((b) => b.ToString("X2"))));
+                */
 
                 byte[] responseBytes;
                 using (var stream = new MemoryStream(data))

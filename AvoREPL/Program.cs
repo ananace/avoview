@@ -62,7 +62,13 @@ namespace AvoREPL
                                 ret.Wait();
 
                                 foreach (var vb in ret.Result)
-                                    Console.WriteLine($"{vb.Id}: {vb.Data}");
+                                    Console.WriteLine($"{AvoCommLib.Util.MIBCollection.GetFullNameFromOid(vb.Id, false)}: {vb.Data}");
+                            }
+                            break;
+                        
+                        case "loadmib":
+                            {
+                                AvoCommLib.Util.MIBCollection.LoadXML(parts[1]);
                             }
                             break;
 
@@ -74,6 +80,7 @@ namespace AvoREPL
                             Console.WriteLine("Available commands:");
                             Console.WriteLine();
                             Console.WriteLine("- help");
+                            Console.WriteLine("- loadmib FILE.XML");
                             Console.WriteLine("- discover IP");
                             Console.WriteLine("- snmp IP OID...");
                             Console.WriteLine("- snmpnext IP OID...");
