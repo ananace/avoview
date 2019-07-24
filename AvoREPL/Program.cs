@@ -62,13 +62,13 @@ namespace AvoREPL
                                 ret.Wait();
 
                                 foreach (var vb in ret.Result)
-                                    Console.WriteLine($"{AvoCommLib.Util.MIBCollection.GetFullNameFromOid(vb.Id, false)}: {vb.Data}");
+                                    Console.WriteLine($"{AvoCommLib.MIB.MIBCollection.GetFullNameFromOid(vb.Id, false)}: {vb.Data}");
                             }
                             break;
                         
                         case "loadmib":
                             {
-                                AvoCommLib.Util.MIBCollection.LoadXML(parts[1]);
+                                AvoCommLib.MIB.MIBCollection.LoadXML(parts[1]);
                             }
                             break;
 
