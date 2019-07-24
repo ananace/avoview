@@ -13,8 +13,52 @@ namespace AvoCommLib
         {
             static Dictionary<ObjectIdentifier, MIBNode> _Oids = new Dictionary<ObjectIdentifier, MIBNode>();
 
+            static ObjectIdentifier RootOid { get { return new ObjectIdentifier("1.3"); } }
+            public static IMIBNode Root { get { return GetNode(RootOid); } }
+
+            public static IReadOnlyList<MIBNode> RegisteredMIBs { get { return _Oids.Values.ToList(); } }
+
+            public static void EnsureRoot()
+            {
+                if (_Oids.ContainsKey(RootOid))
+                    return;
+
+                var oids = new List<Tuple<string,string>>{
+                    new Tuple<string,string>("1.3", "org"),
+                    new Tuple<string,string>("1.3.6", "dod"),
+                    new Tuple<string,string>("1.3.6.1", "internet"),
+                    new Tuple<string,string>("1.3.6.1.4", "private"),
+                    new Tuple<string,string>("1.3.6.1.4.1", "enterprises"),
+                    new Tuple<string,string>("1.3.6.1.2", "mgmt"),
+                };
+
+                foreach (var pair in oids) 
+                {
+                    var oid = new ObjectIdentifier(pair.Item1);
+                    var node = new MIBNode {
+                        Name = pair.Item2,
+                        Oid = oid
+                    };
+
+                    if (pair.Item1.Count(c => c == '.') > 1)
+                    {
+                        var parentOid = new ObjectIdentifier(string.Join(".", pair.Item1.Split('.').Take(pair.Item1.Count(c => c == '.'))));
+                        var parent = _Oids[parentOid];
+                        if (parent != null)
+                        {
+                            parent.AddChild(node);
+                            node.Parent = parent;
+                        }
+                    }
+
+                    _Oids[oid] = node;
+                }
+            }
+
             public static bool LoadXML(string Path)
             {
+                EnsureRoot();
+
                 XmlDocument doc;
 
                 using (var fstream = new FileStream(Path, FileMode.Open))
@@ -40,6 +84,11 @@ namespace AvoCommLib
             public static bool HasOid(ObjectIdentifier input)
             {
                 return _Oids.ContainsKey(input);
+            }
+
+            public static MIBNode GetNode(ObjectIdentifier input)
+            {
+                return _Oids[input];
             }
 
             public static string GetNameFromOid(ObjectIdentifier input)

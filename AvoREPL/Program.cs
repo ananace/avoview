@@ -68,7 +68,12 @@ namespace AvoREPL
                         
                         case "loadmib":
                             {
+                                AvoCommLib.MIB.MIBCollection.EnsureRoot();
+                                var cBefore = AvoCommLib.MIB.MIBCollection.RegisteredMIBs.Count;
                                 AvoCommLib.MIB.MIBCollection.LoadXML(parts[1]);
+                                var cAfter = AvoCommLib.MIB.MIBCollection.RegisteredMIBs.Count;
+
+                                Console.WriteLine($"Loaded {cAfter - cBefore} MIB Nodes from {parts[1]}");
                             }
                             break;
 
