@@ -84,7 +84,21 @@ namespace AvoREPL
                                 ret.Wait();
 
                                 foreach (var vb in ret.Result)
-                                    Console.WriteLine($"{AvoCommLib.MIB.MIBCollection.GetFullNameFromOid(vb.Id)}: {vb.Data}");
+                                {
+                                    AvoCommLib.MIB.MIBNode node;
+
+                                    if (!AvoCommLib.MIB.MIBCollection.HasOid(vb.Id))
+                                        node = AvoCommLib.MIB.MIBCollection.GetNode(new ObjectIdentifier(vb.Id.ToNumerical().SkipLast(1).ToArray()));
+                                    else
+                                        node = AvoCommLib.MIB.MIBCollection.GetNode(vb.Id);
+
+                                    if (node != null && node.Type == AvoCommLib.MIB.MIBType.Int && node.ValueMappings.Any())
+                                        Console.WriteLine($"{vb.Id} ({node.Name}): {node.ValueMappings.GetValueOrDefault((vb.Data as Integer32).ToInt32(), vb.Data.ToString())} ({vb.Data})");
+                                    else if (node != null)
+                                        Console.WriteLine($"{vb.Id} ({node.Name}): {vb.Data}");
+                                    else
+                                        Console.WriteLine($"{vb.Id}: {vb.Data}");
+                                }
                             }
                             break;
                         
@@ -108,7 +122,8 @@ namespace AvoREPL
                                     var node = AvoCommLib.MIB.MIBCollection.GetNode(oid);
 
                                     Console.WriteLine($"Type: {node.Type}");
-                                    Console.WriteLine($"Parent: {node.Parent.Oid}");
+                                    if (node.Parent != null)
+                                        Console.WriteLine($"Parent: {node.Parent.Oid}");
                                     Console.WriteLine($"Full name: {AvoCommLib.MIB.MIBCollection.GetFullNameFromOid(oid)}");
 
                                     if (node.Type == AvoCommLib.MIB.MIBType.Int)
