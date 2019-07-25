@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,6 +11,26 @@ namespace AvoREPL
     {
         static void Main(string[] args)
         {
+            for (int i = 0; i < args.Length; ++i)
+            {
+                var arg = args[i];
+
+                if (arg == "-m")
+                {
+                    AvoCommLib.MIB.MIBCollection.EnsureRoot();
+                    var mibsFolder = args[++i];
+
+                    var files = Directory.GetFiles(mibsFolder, "*.xml");
+                    foreach (var file in files)
+                    {
+                        var cBefore = AvoCommLib.MIB.MIBCollection.RegisteredMIBs.Count;
+                        AvoCommLib.MIB.MIBCollection.LoadXML(file);
+                        var cAfter = AvoCommLib.MIB.MIBCollection.RegisteredMIBs.Count;
+
+                        Console.WriteLine($"Loaded {cAfter - cBefore} MIB Nodes from {file}");
+                    }
+                }
+            }
 
             while (true)
             {
