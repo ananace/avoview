@@ -114,16 +114,23 @@ namespace AvoREPL
                                     if (node.Type == AvoCommLib.MIB.MIBType.Int)
                                     {
                                         var mappings = (node as AvoCommLib.MIB.MIBNode).ValueMappings;
-                                        Console.WriteLine("Values:");
-                                        foreach (var kv in mappings)
-                                            Console.WriteLine($"- {kv.Key} == {kv.Value}");
+                                        if (mappings.Any())
+                                        {
+                                            Console.WriteLine("Values:");
+                                            foreach (var kv in mappings)
+                                                Console.WriteLine($"- {kv.Key} == {kv.Value}");
+                                        }
                                     }
 
-                                    Console.WriteLine("Children:");
-                                    foreach (var child in node.Children)
-                                        Console.WriteLine($"- {child.Oid} - {child.Name}");
+                                    if (node.Children.Any())
+                                    {
+                                        Console.WriteLine("Children:");
+                                        foreach (var child in node.Children)
+                                            Console.WriteLine($"- {child.Oid} - {child.Name}");
+                                    }
 
-                                    Console.WriteLine();
+                                    if (part != parts.Last())
+                                        Console.WriteLine();
                                 }
                             }
                             break;
