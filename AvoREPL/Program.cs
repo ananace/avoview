@@ -11,13 +11,14 @@ namespace AvoREPL
     {
         static void Main(string[] args)
         {
+            AvoCommLib.MIB.MIBCollection.EnsureRoot();
+
             for (int i = 0; i < args.Length; ++i)
             {
                 var arg = args[i];
 
                 if (arg == "-m")
                 {
-                    AvoCommLib.MIB.MIBCollection.EnsureRoot();
                     var mibsFolder = args[++i];
 
                     var files = Directory.GetFiles(mibsFolder, "*.xml");
@@ -83,18 +84,39 @@ namespace AvoREPL
                                 ret.Wait();
 
                                 foreach (var vb in ret.Result)
-                                    Console.WriteLine($"{AvoCommLib.MIB.MIBCollection.GetFullNameFromOid(vb.Id, false)}: {vb.Data}");
+                                    Console.WriteLine($"{AvoCommLib.MIB.MIBCollection.GetFullNameFromOid(vb.Id)}: {vb.Data}");
                             }
                             break;
                         
                         case "loadmib":
                             {
-                                AvoCommLib.MIB.MIBCollection.EnsureRoot();
                                 var cBefore = AvoCommLib.MIB.MIBCollection.RegisteredMIBs.Count;
                                 AvoCommLib.MIB.MIBCollection.LoadXML(parts[1]);
                                 var cAfter = AvoCommLib.MIB.MIBCollection.RegisteredMIBs.Count;
 
                                 Console.WriteLine($"Loaded {cAfter - cBefore} MIB Nodes from {parts[1]}");
+                            }
+                            break;
+
+                        case "oid":
+                            {
+                                foreach (var part in parts.Skip(1))
+                                {
+                                    var oid = new ObjectIdentifier(part);
+                                    Console.WriteLine($"Oid {oid}:");
+
+                                    var node = AvoCommLib.MIB.MIBCollection.GetNode(oid);
+
+                                    Console.WriteLine($"Type: {node.Type}");
+                                    Console.WriteLine($"Parent: {node.Parent.Oid}");
+                                    Console.WriteLine($"Full name: {AvoCommLib.MIB.MIBCollection.GetFullNameFromOid(oid)}");
+
+                                    Console.WriteLine("Children:");
+                                    foreach (var child in node.Children)
+                                        Console.WriteLine($"- {child.Oid} - {child.Name}");
+
+                                    Console.WriteLine();
+                                }
                             }
                             break;
 
@@ -106,8 +128,9 @@ namespace AvoREPL
                             Console.WriteLine("Available commands:");
                             Console.WriteLine();
                             Console.WriteLine("- help");
-                            Console.WriteLine("- loadmib FILE.XML");
                             Console.WriteLine("- discover IP");
+                            Console.WriteLine("- loadmib FILE.XML");
+                            Console.WriteLine("- oid OID...");
                             Console.WriteLine("- snmp IP OID...");
                             Console.WriteLine("- snmpnext IP OID...");
                             break;

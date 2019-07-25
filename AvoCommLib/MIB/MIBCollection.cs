@@ -103,8 +103,8 @@ namespace AvoCommLib
                 var oidParts = input.ToNumerical();
                 List<string> parts = new List<string>();
 
-                if (includeNumerical)
-                    parts.AddRange(oidParts.Take(2).Select((p) => p.ToString()));
+                // if (includeNumerical)
+                //     parts.AddRange(oidParts.Take(2).Select((p) => p.ToString()));
 
                 for (int i = 1; i < oidParts.Length; ++i)
                 {
@@ -133,6 +133,9 @@ namespace AvoCommLib
                     Oid = oid,
                     Parent = parent
                 };
+
+                var typeStr = node.Attributes.GetNamedItem("type").Value.Replace("[]", "Array");
+                mnode.Type = (MIBType)Enum.Parse(typeof(MIBType), typeStr, true);
 
                 _Oids[oid] = mnode;
 

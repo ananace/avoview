@@ -14,6 +14,7 @@ namespace AvoCommLib
             IReadOnlyList<IMIBNode> Children { get; }
 
             MIBAccessibility Accessibility { get; }
+            MIBType Type { get; }
         }
     }
 }
