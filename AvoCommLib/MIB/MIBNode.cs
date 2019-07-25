@@ -17,7 +17,7 @@ namespace AvoCommLib
             public MIBAccessibility Accessibility { get; set; } = MIBAccessibility.NotApplicable;
             public MIBType Type { get; set; } = MIBType.Node;
             public IReadOnlyDictionary<int, string> ValueMappings { get { return _valueMappings; } }
-            Dictionary<int,string> _valueMappings = new Dictionary<int,string>();
+            SortedDictionary<int,string> _valueMappings = new SortedDictionary<int,string>();
 
             public void AddChild(MIBNode child)
             {
