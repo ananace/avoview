@@ -35,6 +35,7 @@ namespace AvoREPL
 
             while (true)
             {
+                Console.WriteLine();
                 Console.Write("> ");
                 var cmd = Console.ReadLine();
                 if (string.IsNullOrEmpty(cmd))
@@ -79,7 +80,6 @@ namespace AvoREPL
                                 foreach (var part in parts.Skip(2))
                                 {
                                     var oid = new ObjectIdentifier(part);
-                                    Console.WriteLine($"Adding Oid: {oid}");
                                     var vb = new Variable(oid);
 
                                     vbl.Add(vb);
