@@ -13,6 +13,7 @@ namespace AvoCommLib
             {
                 Int32 = 2,
                 String = 4,
+                Null = 5,
                 OID = 6,
                 IPAddress = 64,
                 Counter32 = 65,
@@ -44,6 +45,7 @@ namespace AvoCommLib
                     {
                         default: break;
 
+                        case FieldType.Null: return new Variable(oid);
                         case FieldType.Int32: return new Variable(oid, new Integer32(read.ReadInt32()));
                         case FieldType.String: return new Variable(oid, new OctetString(read.ReadBytes(valueLen)));
                         case FieldType.OID:

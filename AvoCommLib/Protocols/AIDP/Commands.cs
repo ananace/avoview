@@ -13,7 +13,7 @@ namespace AvoCommLib
             [Command("AIDP", (byte)CommandTypes.DiscoverRequest, AlwaysAddEOFField = true)]
             public class DiscoverRequest : BaseCommand
             {
-                public byte[] Version { get { return Fields.First(1).FieldData; } set { Fields.Set(new CommandField(1, value)); } }
+                public byte[] Version { get { return Fields.First(1)?.FieldData; } set { Fields.Set(new CommandField(1, value)); } }
                 public IPAddress Subnet { get { return Fields.First(2)?.AsIPAddress(); } set { Fields.Set(new CommandField(2, value)); } }
                 public byte? CIDR { get { return Fields.First(3)?.AsByte(); } set {
                     if (value.HasValue)
