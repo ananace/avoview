@@ -57,6 +57,18 @@ namespace AvoCommLib
                     FieldData = Binary.BigEndian.GetBytes(Data);
                 }
 
+                public CommandField(byte ID, long Data)
+                {
+                    FieldID = ID;
+                    FieldData = Binary.BigEndian.GetBytes(Data);
+                }
+
+                public CommandField(byte ID, ulong Data)
+                {
+                    FieldID = ID;
+                    FieldData = Binary.BigEndian.GetBytes(Data);
+                }
+
                 public CommandField(byte ID, IPAddress Data)
                 {
                     FieldID = ID;
@@ -98,6 +110,16 @@ namespace AvoCommLib
                 public int AsInt32()
                 {
                     return Binary.BigEndian.GetInt32(FieldData);
+                }
+
+                public ulong AsUInt64()
+                {
+                    return Binary.BigEndian.GetUInt64(FieldData);
+                }
+
+                public long AsInt64()
+                {
+                    return Binary.BigEndian.GetInt64(FieldData);
                 }
 
                 public IPAddress AsIPAddress()
