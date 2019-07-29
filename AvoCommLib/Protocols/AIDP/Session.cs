@@ -58,23 +58,31 @@ namespace AvoCommLib
 
                 public async Task<BaseCommand> SendRequest(BaseCommand request)
                 {
-                    var tcs = new TaskCompletionSource<BaseCommand>();
-                    using (var cts = new CancellationTokenSource())
+                    try
                     {
-                        cts.CancelAfter(10000);
-                        cts.Token.Register(() => tcs.TrySetCanceled());
+                        var tcs = new TaskCompletionSource<BaseCommand>();
+                        using (var cts = new CancellationTokenSource())
+                        {
+                            cts.CancelAfter(10000);
+                            cts.Token.Register(() => tcs.TrySetCanceled());
 
-                        request.CommandSequence = GetSequenceNumber();
-                        await Task.Run(() => {
-                            lock (_requestsInFlight)
-                                _requestsInFlight[request.CommandSequence] = tcs;
-                        });
+                            request.CommandSequence = GetSequenceNumber();
+                            await Task.Run(() => {
+                                lock (_requestsInFlight)
+                                    _requestsInFlight[request.CommandSequence] = tcs;
+                            });
 
-                        var bytes = request.ToByteArray();
-                        await _udpSocket.SendAsync(bytes, bytes.Length, Target);
+                            var bytes = request.ToByteArray();
+                            await _udpSocket.SendAsync(bytes, bytes.Length, Target);
+                        }
+
+                        return await tcs.Task;
                     }
-
-                    return await tcs.Task;
+                    finally
+                    {
+                        lock (_requestsInFlight)
+                            _requestsInFlight.Remove(request.CommandSequence);
+                    }
                 }
 
                 public void SendCommand(BaseCommand command)
@@ -119,6 +127,9 @@ namespace AvoCommLib
                             ushort fieldLength = read.ReadUInt16();
                             cmd.Fields.Fields.Add(new CommandField(fieldID, read.ReadBytes(fieldLength)));
                         }
+
+                        if (read.ReadByte() != 13)
+                            throw new Exception("Faulty or missing terminator");
                     }
 
                     return cmd;
