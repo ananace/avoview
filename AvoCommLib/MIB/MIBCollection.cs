@@ -70,7 +70,7 @@ namespace AvoCommLib
 
                 var root = doc.SelectSingleNode("./mib");
 
-                var mibName = root.Attributes.GetNamedItem("name").Value;
+                // var mibName = root.Attributes.GetNamedItem("name").Value;
                 var rootOid = new ObjectIdentifier(root.Attributes.GetNamedItem("rootOid").Value);
 
                 var firstNode = root.SelectSingleNode("./node");

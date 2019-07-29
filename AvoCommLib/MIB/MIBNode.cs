@@ -12,12 +12,12 @@ namespace AvoCommLib
 
             public IMIBNode Parent { get; set; }
             public IReadOnlyList<IMIBNode> Children { get { return _children; } }
-            List<MIBNode> _children = new List<MIBNode>();
+            readonly List<MIBNode> _children = new List<MIBNode>();
 
             public MIBAccessibility Accessibility { get; set; } = MIBAccessibility.NotApplicable;
             public MIBType Type { get; set; } = MIBType.Node;
             public IReadOnlyDictionary<int, string> ValueMappings { get { return _valueMappings; } }
-            SortedDictionary<int,string> _valueMappings = new SortedDictionary<int,string>();
+            readonly SortedDictionary<int,string> _valueMappings = new SortedDictionary<int,string>();
 
             public void AddChild(MIBNode child)
             {

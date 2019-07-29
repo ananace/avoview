@@ -9,7 +9,7 @@ namespace AvoCommLib
 {
     public class Appliance
     {
-        public string Hostname { get { if (string.IsNullOrEmpty(_hostname)) { _snmpGetHostname(); } return _hostname; } private set { _hostname = value; } }
+        public string Hostname { get { if (string.IsNullOrEmpty(_hostname)) { SNMPGetHostname(); } return _hostname; } private set { _hostname = value; } }
         public Models Model { get; private set; }
         public IPAddress IPAddress { get { return _ipAddress; } set { _ipAddress = value; AIDPSession.Target.Address = value; } }
         public IPAddress GatewayAddress { get; private set; }
@@ -33,7 +33,7 @@ namespace AvoCommLib
             ParseDiscoveryData(res.Result as Protocols.AIDP.DiscoverResponse);
         }
 
-        void _snmpGetHostname()
+        void SNMPGetHostname()
         {
             var ret = AIDPSession.SendRequest(new Protocols.AIDP.SNMPGetRequest{ Variable = new Lextm.SharpSnmpLib.Variable(new Lextm.SharpSnmpLib.ObjectIdentifier("1.3.6.1.2.1.1.5.0")) });
             ret.Wait();
