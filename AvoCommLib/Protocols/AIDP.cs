@@ -8,13 +8,13 @@ namespace AvoCommLib
 {
     namespace Protocols
     {
-        public class AIDP : Base
+        public class AIDP_ : Base_
         {
             const int HEADER_SIZE = 13;
 
             UdpClient _udpSocket = new UdpClient();
 
-            public AIDP(bool multicast)
+            public AIDP_(bool multicast)
             {
                 if (!multicast)
                     throw new ArgumentException("Multicast must be true for a multicast socket", nameof(multicast));
@@ -22,11 +22,11 @@ namespace AvoCommLib
                 _udpSocket.EnableBroadcast = true;
             }
 
-            public AIDP(IPAddress ip, ushort port = 3211) : this(new IPEndPoint(ip, port))
+            public AIDP_(IPAddress ip, ushort port = 3211) : this(new IPEndPoint(ip, port))
             {
             }
 
-            public AIDP(IPEndPoint endpoint)
+            public AIDP_(IPEndPoint endpoint)
             {
                 _udpSocket.Connect(endpoint.Address, endpoint.Port);
                 // _udpSocket.Client.RemoteEndPoint = endpoint;

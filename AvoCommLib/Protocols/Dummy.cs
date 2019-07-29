@@ -6,7 +6,7 @@ namespace AvoCommLib
 {
     namespace Protocols
     {
-        public class Dummy : Base
+        public class Dummy_ : Base_
         {
             protected override async Task<int> WriteData(byte[] data)
             {

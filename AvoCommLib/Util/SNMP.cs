@@ -140,7 +140,7 @@ namespace AvoCommLib
                         {
                             case 1: // Error status
                                 {
-                                    var errorStatus = (Enums.AIDPError)read.ReadUInt16();
+                                    var errorStatus = read.ReadUInt16();
                                     Console.WriteLine($"Error status: {errorStatus}");
                                 }
                                 break;

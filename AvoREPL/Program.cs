@@ -49,11 +49,20 @@ namespace AvoREPL
                         case "discover":
                             {
                                 var ip = System.Net.IPAddress.Parse(parts[1].ToLower());
-                                var appliance = new AvoCommLib.Appliance();
-                                appliance.IPAddress = ip;
+                                var appliance = new AvoCommLib.Appliance {
+                                    IPAddress = ip
+                                };
                                 appliance.Discover();
 
-                                // Console.WriteLine(appliance.SystemName);
+                                Console.WriteLine("Discovered data:");
+                                Console.WriteLine();
+                                Console.WriteLine($"          Model: {appliance.Model}");
+                                Console.WriteLine($"    MAC Address: {string.Join(":", appliance.MACAddress.Select(b => b.ToString("X2")))}");
+                                Console.WriteLine($"     IP Address: {appliance.IPAddress}");
+                                Console.WriteLine($" Subnet Address: {appliance.SubnetAddress}");
+                                Console.WriteLine($"Gateway Address: {appliance.GatewayAddress}");
+                                Console.WriteLine($"       Hostname: {appliance.Hostname}");
+                                Console.WriteLine($"           Mode: {appliance.Mode}");
                             }
                             break;
 
@@ -62,6 +71,9 @@ namespace AvoREPL
                         case "snmp":
                             {
                                 var ip = System.Net.IPAddress.Parse(parts[1].ToLower());
+                                var appliance = new AvoCommLib.Appliance {
+                                    IPAddress = ip
+                                };
                                 var vbl = new List<Variable>();
 
                                 foreach (var part in parts.Skip(2))
@@ -73,22 +85,28 @@ namespace AvoREPL
                                     vbl.Add(vb);
                                 }
 
-                                var aidp = new AvoCommLib.Protocols.AIDP(ip);
-
-                                Task<List<Variable>> ret;
+                                Task<AvoCommLib.Protocols.AIDP.BaseCommand> ret;
                                 if (parts.First().ToLower() == "snmp")
-                                    ret = aidp.SnmpGet(vbl);
+                                    ret = appliance.AIDPSession.SendRequest(new AvoCommLib.Protocols.AIDP.SNMPGetRequest { Variables = vbl });
                                 else
-                                    ret = aidp.SnmpGetNext(vbl);
+                                    ret = appliance.AIDPSession.SendRequest(new AvoCommLib.Protocols.AIDP.SNMPGetNextRequest { Variables = vbl });
 
                                 ret.Wait();
 
-                                foreach (var vb in ret.Result)
+                                IEnumerable<Variable> variables = (ret.Result as AvoCommLib.Protocols.AIDP.SNMPResponse).Variables;
+
+                                foreach (var vb in variables)
                                 {
                                     AvoCommLib.MIB.MIBNode node;
 
                                     if (!AvoCommLib.MIB.MIBCollection.HasOid(vb.Id))
-                                        node = AvoCommLib.MIB.MIBCollection.GetNode(new ObjectIdentifier(vb.Id.ToNumerical().SkipLast(1).ToArray()));
+                                    {
+                                        try {
+                                            node = AvoCommLib.MIB.MIBCollection.GetNode(new ObjectIdentifier(vb.Id.ToNumerical().SkipLast(1).ToArray()));
+                                        } catch (KeyNotFoundException) {
+                                            node = null;
+                                        }
+                                    }
                                     else
                                         node = AvoCommLib.MIB.MIBCollection.GetNode(vb.Id);
 

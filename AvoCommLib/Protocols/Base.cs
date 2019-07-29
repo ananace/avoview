@@ -10,7 +10,7 @@ namespace AvoCommLib
 {
     namespace Protocols
     {
-        public abstract class Base
+        public abstract class Base_
         {
             const int HEADER_SIZE = 13;
 

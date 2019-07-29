@@ -11,7 +11,7 @@ namespace AvoCommLib
     {
         public static class MIBCollection
         {
-            static Dictionary<ObjectIdentifier, MIBNode> _Oids = new Dictionary<ObjectIdentifier, MIBNode>();
+            static readonly Dictionary<ObjectIdentifier, MIBNode> _Oids = new Dictionary<ObjectIdentifier, MIBNode>();
 
             static ObjectIdentifier RootOid { get { return new ObjectIdentifier("1.3"); } }
             public static IMIBNode Root { get { return GetNode(RootOid); } }
