@@ -1,5 +1,3 @@
-using AvoCommLib.Protocols.Base;
-
 namespace AvoCommLib
 {
     namespace Protocols
