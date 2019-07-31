@@ -80,6 +80,7 @@ namespace AvoCommLib
                     }
                     finally
                     {
+                        // In case the request fails for any reason
                         lock (_requestsInFlight)
                             _requestsInFlight.Remove(request.CommandSequence);
                     }
