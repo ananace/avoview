@@ -158,18 +158,25 @@ namespace AvoCommLib
             [Command("ASMP", (byte)CommandTypes.HeartbeatRequest)]
             public class HeartbeatRequest : BaseCommand
             {
+                public HeartbeatRequest()
+                {
+                    // Default values
+                    Interval = 60;
+                    Timeout = 120;
+                }
+
                 public short? Interval { get { return Fields.First(1)?.AsInt16(); } set {
                     if (value.HasValue)
                         Fields.Set(new CommandField(1, value.Value));
                     else
                         Fields.Remove(1);
-                } } // = 60;
+                } }
                 public short? Timeout { get { return Fields.First(2)?.AsInt16(); } set {
                     if (value.HasValue)
                         Fields.Set(new CommandField(2, value.Value));
                     else
                         Fields.Remove(2);
-                } } // = 120;
+                } }
             }
 
             [Command("ASMP", (byte)CommandTypes.HeartbeatResponse)]
