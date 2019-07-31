@@ -20,7 +20,7 @@ namespace AvoCommLib
 
             public abstract class ResultResponse : BaseCommand
             {
-                public Result Result { get { return (Result)Fields.First(1)?.AsUInt16(); } }
+                public Result? Result { get { return (Result?)Fields.First(1)?.AsUInt16(); } }
             }
 
             [Command("ASMP", (byte)CommandTypes.LoginResponse)]
@@ -58,7 +58,7 @@ namespace AvoCommLib
             public abstract class SNMPResponse : BaseCommand
             {
                 public bool HasError { get { return Fields.First(1)?.AsUInt16() != 0; } }
-                public Result Result { get { return (Result)Fields.First(2)?.AsUInt16(); } }
+                public Result? Result { get { return (Result?)Fields.First(2)?.AsUInt16(); } }
 
                 public Variable Variable { get { return Fields.First(3)?.AsVarBind(); } }
                 public IEnumerable<Variable> Variables { get {
@@ -185,7 +185,7 @@ namespace AvoCommLib
             [Command("ASMP", (byte)CommandTypes.SessionSetupRequest)]
             public class SessionSetupRequest : BaseCommand
             {
-                public ConnectionType ConnectionType { get { return (ConnectionType)Fields.First(1)?.AsInt16(); } set { Fields.Set(new CommandField(1, (Int16)value)); } }
+                public ConnectionType? ConnectionType { get { return (ConnectionType?)Fields.First(1)?.AsInt16(); } set { Fields.Set(new CommandField(1, (Int16)value)); } }
             }
 
             [Command("ASMP", (byte)CommandTypes.SessionSetupResponse)]

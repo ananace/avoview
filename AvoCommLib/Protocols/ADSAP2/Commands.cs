@@ -13,9 +13,9 @@ namespace AvoCommLib
             [Command("ADSAP2", (byte)CommandTypes.SetCertificatesRequest)]
             public class SetCertificatesRequest : BaseCommand
             {
-                public byte[] SystemCertificate { get { return Fields.First(1).FieldData; } set { Fields.Set(new CommandField(1, value)); } }
-                public byte[] ApplianceCertificate { get { return Fields.First(2).FieldData; } set { Fields.Set(new CommandField(2, value)); } }
-                public byte[] PrivateKey { get { return Fields.First(3).FieldData; } set { Fields.Set(new CommandField(3, value)); } }
+                public byte[] SystemCertificate { get { return Fields.First(1)?.FieldData; } set { Fields.Set(new CommandField(1, value)); } }
+                public byte[] ApplianceCertificate { get { return Fields.First(2)?.FieldData; } set { Fields.Set(new CommandField(2, value)); } }
+                public byte[] PrivateKey { get { return Fields.First(3)?.FieldData; } set { Fields.Set(new CommandField(3, value)); } }
             }
 
             public class StatusResponse : BaseCommand
@@ -35,13 +35,13 @@ namespace AvoCommLib
             [Command("ADSAP2", (byte)CommandTypes.PreauthorizeRequest)]
             public class PreauthorizeRequest : BaseCommand
             {
-                public byte[] SessionCertificate { get { return Fields.First(1).FieldData; } set { Fields.Set(new CommandField(1, value)); } }
+                public byte[] SessionCertificate { get { return Fields.First(1)?.FieldData; } set { Fields.Set(new CommandField(1, value)); } }
             }
 
             [Command("ADSAP2", (byte)CommandTypes.PreauthorizeResponse)]
             public class PreauthorizeResponse : StatusResponse
             {
-                public string Username { get { return Fields.First(2).AsString(); } }
+                public string Username { get { return Fields.First(2)?.AsString(); } }
                 public byte? PreemptionLevel { get { return Fields.First(3)?.AsByte(); } }
                 public SessionState? SessionState { get { return (SessionState?)Fields.First(4)?.AsByte(); } }
             }
@@ -49,22 +49,22 @@ namespace AvoCommLib
             [Command("ADSAP2", (byte)CommandTypes.AuthorizeRequest)]
             public class AuthorizeRequest : BaseCommand
             {
-                public byte[] SessionCert { get { return Fields.First(1).FieldData; } set { Fields.Set(new CommandField(1, value)); } }
+                public byte[] SessionCert { get { return Fields.First(1)?.FieldData; } set { Fields.Set(new CommandField(1, value)); } }
 
-                public string Username { get { return Fields.First(2).AsString(); } set {
+                public string Username { get { return Fields.First(2)?.AsString(); } set {
                     if (value == null)
                         Fields.Remove(2);
                     else
                         Fields.Set(new CommandField(2, value));
                 } }
-                public string Password { get { return Fields.First(3).AsString(); } set {
+                public string Password { get { return Fields.First(3)?.AsString(); } set {
                     if (value == null)
                         Fields.Remove(3);
                     else
                         Fields.Set(new CommandField(3, value));
                 } }
-                public byte[] PublicKey { get { return Fields.First(4).FieldData; } set { Fields.Set(new CommandField(4, value)); } }
-                public string SessionMode { get { return Fields.First(5).AsString(); } set {
+                public byte[] PublicKey { get { return Fields.First(4)?.FieldData; } set { Fields.Set(new CommandField(4, value)); } }
+                public string SessionMode { get { return Fields.First(5)?.AsString(); } set {
                     if (value == null)
                         Fields.Remove(5);
                     else

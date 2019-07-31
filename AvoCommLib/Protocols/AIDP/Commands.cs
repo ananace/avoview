@@ -57,7 +57,7 @@ namespace AvoCommLib
 
             public abstract class IPResponse : BaseCommand
             {
-                public Result Result { get { return (Result)Fields.First(1)?.AsUInt16(); } }
+                public Result? Result { get { return (Result?)Fields.First(1)?.AsUInt16(); } }
             }
 
             [Command("AIDP", (byte)CommandTypes.TestIPResponse)]
@@ -86,7 +86,7 @@ namespace AvoCommLib
             public abstract class SNMPResponse : BaseCommand
             {
                 public bool HasError { get { return Fields.First(1)?.AsUInt16() != 0; } }
-                public Result Result { get { return (Result)Fields.First(2)?.AsUInt16(); } }
+                public Result? Result { get { return (Result?)Fields.First(2)?.AsUInt16(); } }
 
                 public Variable Variable { get { return Fields.First(3)?.AsVarBind(); } }
                 public IEnumerable<Variable> Variables { get {
