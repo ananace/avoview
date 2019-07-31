@@ -10,6 +10,7 @@ namespace AvoCommLib
             {
                 public ushort CommandSequence { get; set; }
                 public FieldCollection Fields { get; } = new FieldCollection();
+                public virtual bool IsValid { get { return true; } }
             }
         }
     }

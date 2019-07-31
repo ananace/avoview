@@ -9,6 +9,8 @@ namespace AvoCommLib
             public interface ICommand
             {
                 FieldCollection Fields { get; }
+
+                bool IsValid { get; }
             }
         }
     }
