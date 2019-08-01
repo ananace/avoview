@@ -32,6 +32,17 @@ namespace AvoCommLib
                     _udpSocket.BeginReceive(MessageReceived, null);
                 }
 
+                public Session(bool Broadcast, IPAddress Target = null) : this()
+                {
+                    if (!Broadcast)
+                        throw new ArgumentException("Broadcast must be true", nameof(Broadcast));
+
+                    if (Target == null)
+                        Target = IPAddress.Broadcast;
+
+                    _udpSocket.EnableBroadcast = true;
+                }
+
                 public Session(IPEndPoint Target) : this()
                 {
                     this.Target = Target;

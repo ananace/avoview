@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -22,6 +23,11 @@ namespace AvoCommLib
         string _hostname;
 
         public Protocols.AIDP.Session AIDPSession { get; private set; } = new Protocols.AIDP.Session();
+
+        public static IEnumerable<Appliance> DiscoverAll(IPAddress Target = null)
+        {
+            yield break;
+        }
 
         public void Discover()
         {
