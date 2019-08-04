@@ -66,7 +66,7 @@ namespace AvoCommLib
                     return bytes;
                 }
 
-                // TODO: Use regular 'object' and have a field creation method to switch between them?
+                // TODO: Use regular 'object' and have a field creation method to switch between them
                 public static IEnumerable<CommandField> GetFields(this ICommand command)
                 {
                     var fields = command.GetType().GetFields()
@@ -77,6 +77,9 @@ namespace AvoCommLib
                     foreach (var field in fields)
                     {
                         var metadata = field.GetCustomAttribute<CommandFieldAttribute>();
+                        var serializationType = metadata.SerializeAs;
+                        if (serializationType == null)
+                            serializationType = field.FieldType;
                         dynamic data = field.GetValue(command);
                         if (data != null)
                             yield return new CommandField(metadata.FieldID, data);
@@ -85,6 +88,9 @@ namespace AvoCommLib
                     foreach (var property in properties)
                     {
                         var metadata = property.GetCustomAttribute<CommandFieldAttribute>();
+                        var serializationType = metadata.SerializeAs;
+                        if (serializationType == null)
+                            serializationType = property.PropertyType;
                         dynamic data = property.GetValue(command);
                         if (data != null)
                             yield return new CommandField(metadata.FieldID, data);
