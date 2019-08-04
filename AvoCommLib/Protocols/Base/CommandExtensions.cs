@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -45,8 +46,11 @@ namespace AvoCommLib
                     using (var write = new BigEndianWriter(ms))
                     {
                         var info = command.GetCommandInfo();
-                        foreach (var field in command.Fields)
+                        foreach (var field in command.GetFields())
                         {
+                            if (field.FieldData == null)
+                                continue;
+
                             write.Write(field.FieldID);
                             write.Write((Int16)field.FieldData.Length);
                             write.Write(field.FieldData);
@@ -60,6 +64,38 @@ namespace AvoCommLib
                     ms.Dispose();
 
                     return bytes;
+                }
+
+                public static IEnumerable<CommandField> GetFields(this ICommand command)
+                {
+                    var fields = command.GetType().GetFields()
+                        .Where(f => f.GetCustomAttribute<CommandFieldAttribute>() != null);
+                    var properties = command.GetType().GetProperties()
+                        .Where(f => f.GetCustomAttribute<CommandFieldAttribute>() != null);
+
+                    foreach (var field in fields)
+                    {
+                        var metadata = field.GetCustomAttribute<CommandFieldAttribute>();
+                        dynamic data = field.GetValue(command);
+                        if (data != null)
+                            yield return new CommandField(metadata.FieldID, data);
+                    }
+
+                    foreach (var property in properties)
+                    {
+                        var metadata = property.GetCustomAttribute<CommandFieldAttribute>();
+                        dynamic data = property.GetValue(command);
+                        if (data != null)
+                            yield return new CommandField(metadata.FieldID, data);
+                    }
+                }
+
+                public static void SerializeFromFields(this ICommand command)
+                {
+                }
+
+                public static void SerializeToFields(this ICommand command)
+                {
                 }
 
                 public static CommandAttribute GetCommandInfo(this ICommand command)

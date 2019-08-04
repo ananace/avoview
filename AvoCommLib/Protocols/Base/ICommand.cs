@@ -8,8 +8,8 @@ namespace AvoCommLib
         {
             public interface ICommand
             {
+                // TODO: Remove
                 FieldCollection Fields { get; }
-
                 bool IsValid { get; }
             }
         }

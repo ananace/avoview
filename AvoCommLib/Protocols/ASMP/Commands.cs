@@ -15,15 +15,15 @@ namespace AvoCommLib
             public class LoginRequest : BaseCommand
             {
                 [CommandField(1, Required = true)]
-                public string Username { get { return Fields.First(1)?.AsString(); } set { Fields.Set(new CommandField(1, value)); } }
+                public string Username { get; set; }
                 [CommandField(2, Required = true)]
-                public string Password { get { return Fields.First(2)?.AsString(); } set { Fields.Set(new CommandField(2, value)); } }
+                public string Password { get; set; }
             }
 
             public abstract class ResultResponse : BaseCommand
             {
                 [CommandField(1, SerializeAs = typeof(UInt16))]
-                public Result? Result { get { return (Result?)Fields.First(1)?.AsUInt16(); } }
+                public Result? Result { get; set; }
             }
 
             [Command("ASMP", (byte)CommandTypes.LoginResponse)]
@@ -38,13 +38,7 @@ namespace AvoCommLib
             public abstract class SNMPRequest : BaseCommand
             {
                 [CommandField(1, Required = true)]
-                public IEnumerable<Variable> Variables { get {
-                    return Fields.Where(1).Select(f => f.AsVarBind());
-                } set {
-                    Fields.Remove(1);
-                    Fields.Fields.AddRange(value.Select(v => new CommandField(1, v)));
-                } }
-
+                public Variable[] Variables { get; set; }
                 public Variable Variable { get { return Variables.First(); } set { Variables = new[] { value }; } }
             }
 
@@ -58,20 +52,18 @@ namespace AvoCommLib
             public class SNMPSetRequest : SNMPRequest
             {
                 [CommandField(2)]
-                public string Username { get { return Fields.First(2)?.AsString(); } set { Fields.Set(new CommandField(2, value)); } }
+                public string Username { get; set; }
             }
 
             public abstract class SNMPResponse : BaseCommand
             {
                 [CommandField(1, SerializeAs = typeof(UInt16))]
-                public bool HasError { get { return Fields.First(1)?.AsUInt16() != 0; } }
+                public bool HasError { get; set; }
                 [CommandField(2, SerializeAs = typeof(UInt16))]
-                public Result? Result { get { return (Result?)Fields.First(2)?.AsUInt16(); } }
+                public Result? Result { get; set; }
 
                 [CommandField(3)]
-                public IEnumerable<Variable> Variables { get {
-                    return Fields.Where(3).Select(f => f.AsVarBind());
-                } }
+                public IEnumerable<Variable> Variables { get; set; }
                 public Variable Variable { get { return Variables.First(); } }
             }
 
@@ -88,21 +80,11 @@ namespace AvoCommLib
             public class OpenWriteRequest : BaseCommand
             {
                 [CommandField(1, Required = true)]
-                public string FileName { get { return Fields.First(1)?.AsString(); } set { Fields.Set(new CommandField(1, value)); } }
+                public string FileName { get; set; }
                 [CommandField(2)]
-                public long? FileSize { get { return Fields.First(2)?.AsInt64(); } set {
-                    if (value.HasValue)
-                        Fields.Set(new CommandField(2, value.Value));
-                    else
-                        Fields.Remove(2);
-                } }
+                public long? FileSize { get; set; }
                 [CommandField(3)]
-                public int? FileType { get { return Fields.First(3)?.AsInt32(); } set {
-                    if (value.HasValue)
-                        Fields.Set(new CommandField(3, value.Value));
-                    else
-                        Fields.Remove(3);
-                } }
+                public int? FileType { get; set; }
             }
 
             [Command("ASMP", (byte)CommandTypes.OpenWriteResponse)]
@@ -112,21 +94,16 @@ namespace AvoCommLib
             public class WriteRequest : BaseCommand
             {
                 [CommandField(1, Required = true)]
-                public int? BlockNumber { get { return Fields.First(1)?.AsInt32(); } set {
-                    if (value.HasValue)
-                        Fields.Set(new CommandField(1, value.Value));
-                    else
-                        Fields.Remove(1);
-                } }
+                public int? BlockNumber { get; set; }
                 [CommandField(2)]
-                public byte[] BlockData { get { return Fields.First(2)?.FieldData; } set { Fields.Set(new CommandField(2, value)); } }
+                public byte[] BlockData { get; set; }
             }
 
             [Command("ASMP", (byte)CommandTypes.WriteResponse)]
             public class WriteResponse : ResultResponse
             {
                 [CommandField(2)]
-                public int? BlockNumber { get { return Fields.First(2)?.AsInt32(); } }
+                public int? BlockNumber { get; set; }
             }
 
             [Command("ASMP", (byte)CommandTypes.CloseWriteRequest)]
@@ -139,35 +116,30 @@ namespace AvoCommLib
             public class OpenReadRequest : BaseCommand
             {
                 [CommandField(1, Required = true)]
-                public string FileName { get { return Fields.First(1)?.AsString(); } set { Fields.Set(new CommandField(1, value)); } }
+                public string FileName { get; set; }
             }
 
             [Command("ASMP", (byte)CommandTypes.OpenReadResponse)]
             public class OpenReadResponse : ResultResponse
             {
                 [CommandField(2)]
-                public long? FileSize { get { return Fields.First(2)?.AsInt64(); } }
+                public long? FileSize { get; set; }
             }
 
             [Command("ASMP", (byte)CommandTypes.ReadRequest)]
             public class ReadRequest : BaseCommand
             {
                 [CommandField(1, Required = true)]
-                public int? BlockNumber { get { return Fields.First(1)?.AsInt32(); } set {
-                    if (value.HasValue)
-                        Fields.Set(new CommandField(1, value.Value));
-                    else
-                        Fields.Remove(1);
-                } }
+                public int? BlockNumber { get; set; }
             }
 
             [Command("ASMP", (byte)CommandTypes.ReadResponse)]
             public class ReadResponse : ResultResponse
             {
                 [CommandField(2)]
-                public int? BlockNumber { get { return Fields.First(2)?.AsInt32(); } }
+                public int? BlockNumber { get; set; }
                 [CommandField(3)]
-                public byte[] BlockData { get { return Fields.First(3)?.FieldData; } }
+                public byte[] BlockData { get; set; }
             }
 
             [Command("ASMP", (byte)CommandTypes.CloseReadRequest)]
@@ -187,19 +159,9 @@ namespace AvoCommLib
                 }
 
                 [CommandField(1, Required = true)]
-                public short? Interval { get { return Fields.First(1)?.AsInt16(); } set {
-                    if (value.HasValue)
-                        Fields.Set(new CommandField(1, value.Value));
-                    else
-                        Fields.Remove(1);
-                } }
+                public short Interval { get; set; }
                 [CommandField(2, Required = true)]
-                public short? Timeout { get { return Fields.First(2)?.AsInt16(); } set {
-                    if (value.HasValue)
-                        Fields.Set(new CommandField(2, value.Value));
-                    else
-                        Fields.Remove(2);
-                } }
+                public short Timeout { get; set; }
             }
 
             [Command("ASMP", (byte)CommandTypes.HeartbeatResponse)]
@@ -209,7 +171,7 @@ namespace AvoCommLib
             public class SessionSetupRequest : BaseCommand
             {
                 [CommandField(1, SerializeAs = typeof(Int16))]
-                public ConnectionType? ConnectionType { get { return (ConnectionType?)Fields.First(1)?.AsInt16(); } set { Fields.Set(new CommandField(1, (Int16)value)); } }
+                public ConnectionType? ConnectionType { get; set; }
             }
 
             [Command("ASMP", (byte)CommandTypes.SessionSetupResponse)]
@@ -219,35 +181,25 @@ namespace AvoCommLib
             public class VersionRequest : BaseCommand
             {
                 [CommandField(1, Required = true)]
-                public string ClientVersion { get { return Fields.First(1)?.AsString(); } set { Fields.Set(new CommandField(1, value)); } }
+                public string ClientVersion { get; set; }
             }
 
             [Command("ASMP", (byte)CommandTypes.VersionResponse)]
             public class VersionResponse : ResultResponse
             {
                 [CommandField(1)]
-                public string Version { get { return Fields.First(1)?.AsString(); } }
+                public string Version { get; set; }
             }
 
             [Command("ASMP", (byte)CommandTypes.Broadcast)]
             public class Broadcast : BaseCommand
             {
                 [CommandField(1, Required = true)]
-                public short? Type { get { return Fields.First(1)?.AsInt16(); } set {
-                    if (value.HasValue)
-                        Fields.Set(new CommandField(1, value.Value));
-                    else
-                        Fields.Remove(1);
-                } }
+                public short Type { get; set; }
                 [CommandField(2, Required = true)]
-                public string Message { get { return Fields.First(2)?.AsString(); } set { Fields.Set(new CommandField(2, value)); } }
+                public string Message { get; set; }
                 [CommandField(3, Required = true)]
-                public short? MessageCode { get { return Fields.First(3)?.AsInt16(); } set {
-                    if (value.HasValue)
-                        Fields.Set(new CommandField(3, value.Value));
-                    else
-                        Fields.Remove(3);
-                } }
+                public short MessageCode { get; set; }
             }
         }
     }
