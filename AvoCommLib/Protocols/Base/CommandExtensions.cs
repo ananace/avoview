@@ -66,6 +66,7 @@ namespace AvoCommLib
                     return bytes;
                 }
 
+                // TODO: Use regular 'object' and have a field creation method to switch between them?
                 public static IEnumerable<CommandField> GetFields(this ICommand command)
                 {
                     var fields = command.GetType().GetFields()
