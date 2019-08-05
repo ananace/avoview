@@ -99,30 +99,27 @@ namespace AvoCommLib
                     }
                 }
 
-                public static void ReadFromStream(this ICommand command, Stream stream)
+                public static void ReadFromReader(this ICommand command, System.IO.BinaryReader read)
                 {
                     var properties = command.GetType().GetProperties()
                         .Where(f => f.GetCustomAttribute<CommandFieldAttribute>() != null)
                         .Select(f => new { Property = f, Metadata = f.GetCustomAttribute<CommandFieldAttribute>() });
 
-                    using (var read = new BigEndianReader(stream))
+                    while (true)
                     {
-                        while (true)
-                        {
-                            byte fieldID = read.ReadByte();
-                            if (fieldID == 255 || read.PeekChar() < 0)
-                                break;
+                        byte fieldID = read.ReadByte();
+                        if (fieldID == 255 || read.PeekChar() < 0)
+                            break;
 
-                            ushort fieldLength = read.ReadUInt16();
-                            var fieldData = read.ReadBytes(fieldLength);
+                        ushort fieldLength = read.ReadUInt16();
+                        var fieldData = read.ReadBytes(fieldLength);
 
-                            var fieldInfo = properties.First(f => f.Metadata.FieldID == fieldID);
-                            var serializationType = fieldInfo.Property.PropertyType;
-                            if (fieldInfo.Metadata.SerializeAs != null)
-                                serializationType = fieldInfo.Metadata.SerializeAs;
+                        var fieldInfo = properties.First(f => f.Metadata.FieldID == fieldID);
+                        var serializationType = fieldInfo.Property.PropertyType;
+                        if (fieldInfo.Metadata.SerializeAs != null)
+                            serializationType = fieldInfo.Metadata.SerializeAs;
 
-                            // TODO: Read an instance of serializationType from fieldData
-                        }
+                        // TODO: Read an instance of serializationType from fieldData
                     }
                 }
 
