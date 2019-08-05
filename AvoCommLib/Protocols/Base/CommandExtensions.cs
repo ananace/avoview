@@ -99,7 +99,7 @@ namespace AvoCommLib
                     }
                 }
 
-                public static void ReadFromReader(this ICommand command, System.IO.BinaryReader read)
+                public static void ReadFromReader(this ICommand command, BigEndianReader read)
                 {
                     var properties = command.GetType().GetProperties()
                         .Where(f => f.GetCustomAttribute<CommandFieldAttribute>() != null)
@@ -112,14 +112,41 @@ namespace AvoCommLib
                             break;
 
                         ushort fieldLength = read.ReadUInt16();
-                        var fieldData = read.ReadBytes(fieldLength);
 
                         var fieldInfo = properties.First(f => f.Metadata.FieldID == fieldID);
                         var serializationType = fieldInfo.Property.PropertyType;
                         if (fieldInfo.Metadata.SerializeAs != null)
                             serializationType = fieldInfo.Metadata.SerializeAs;
 
-                        // TODO: Read an instance of serializationType from fieldData
+                        if (Nullable.GetUnderlyingType(serializationType) != null)
+                            serializationType = Nullable.GetUnderlyingType(serializationType);
+
+                        if (serializationType != typeof(byte[]) && serializationType.GetInterfaces().Any(i => i == typeof(IList)))
+                        {
+                            var listType = serializationType.GetInterfaces().First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IList<>));
+                            var internalSerializationType = listType.GetGenericArguments()[0];
+
+                            var cur = fieldInfo.Property.GetValue(command) as IList;
+                            if (cur == null)
+                                cur = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(internalSerializationType));
+                            cur.Add(read.ReadOfType(fieldLength, internalSerializationType));
+
+                            if (serializationType.IsArray)
+                                fieldInfo.Property.SetValue(command, cur);
+                            else
+                                fieldInfo.Property.SetValue(command, cur);
+                        }
+                        else
+                        {
+                            var value = read.ReadOfType(fieldLength, serializationType);
+                            if (serializationType != fieldInfo.Property.PropertyType)
+                            {
+                                if (!fieldInfo.Property.PropertyType.IsEnum)
+                                    value = Convert.ChangeType(value, fieldInfo.Property.PropertyType);
+                            }
+
+                            fieldInfo.Property.SetValue(command, value);
+                        }
                     }
                 }
 

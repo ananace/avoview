@@ -76,8 +76,8 @@ namespace AvoCommLib
             public abstract class SNMPRequest : BaseCommand
             {
                 [CommandField(1, Required = true)]
-                public Variable[] Variables { get; set; }
-                public Variable Variable { get { return Variables.FirstOrDefault(); } set { Variables = new[] { value }; } }
+                public List<Variable> Variables { get; set; }
+                public Variable Variable { get { return Variables.FirstOrDefault(); } set { Variables = new List<Variable>{ value }; } }
             }
 
             [Command("AIDP", (byte)CommandTypes.SNMPGetRequest)]
@@ -94,8 +94,8 @@ namespace AvoCommLib
                 public Result Result { get; set; }
 
                 [CommandField(3, Required = true)]
-                public Variable[] Variables { get; set; }
-                public Variable Variable { get { return Variables.First(); } }
+                public List<Variable> Variables { get; set; }
+                public Variable Variable { get { return Variables.First(); } set { Variables = new List<Variable>{ value }; } }
             }
 
             [Command("AIDP", (byte)CommandTypes.SNMPGetResponse)]

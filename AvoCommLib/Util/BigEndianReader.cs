@@ -1,4 +1,8 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Net;
+using AvoCommLib.Util;
 using BinaryEncoding;
 
 namespace AvoCommLib
@@ -34,6 +38,39 @@ namespace AvoCommLib
             public override ulong ReadUInt64()
             {
                 return Binary.BigEndian.GetUInt64(ReadBytes(8));
+            }
+
+            Dictionary<Type, Func<int, object>> _readers;
+            Dictionary<Type, Func<int, object>> Readers {
+                get
+                {
+                    if (_readers == null)
+                        _readers = new Dictionary<Type, Func<int, object>>{
+                            [typeof(byte)] = s => ReadByte(),
+                            [typeof(char)] = s => ReadChar(),
+                            [typeof(UInt16)] = s => ReadUInt16(),
+                            [typeof(Int16)] = s => ReadInt16(),
+                            [typeof(UInt32)] = s => ReadUInt32(),
+                            [typeof(Int32)] = s => ReadInt32(),
+                            [typeof(UInt64)] = s => ReadUInt64(),
+                            [typeof(Int64)] = s => ReadInt64(),
+
+                            [typeof(byte[])] = s => ReadBytes(s),
+                            [typeof(string)] = s => ReadChars(s),
+                            [typeof(IPAddress)] = s => new IPAddress(ReadBytes(s)),
+                            [typeof(Lextm.SharpSnmpLib.Variable)] = s => SNMP.DecodeVarBind(ReadBytes(s))
+                        };
+                    return _readers;
+                }
+            }
+
+            // TODO: Asserts on size
+            public object ReadOfType(int size, Type type)
+            {
+                if (Readers.ContainsKey(type))
+                    return Readers[type](size);
+                
+                throw new ArgumentException("Unable to read data of given type", nameof(type));
             }
         }
     }

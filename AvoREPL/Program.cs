@@ -87,9 +87,9 @@ namespace AvoREPL
 
                                 Task<AvoCommLib.Protocols.AIDP.BaseCommand> ret;
                                 if (parts.First().ToLower() == "snmp")
-                                    ret = appliance.AIDPSession.SendRequest(new AvoCommLib.Protocols.AIDP.SNMPGetRequest { Variables = vbl.ToArray() });
+                                    ret = appliance.AIDPSession.SendRequest(new AvoCommLib.Protocols.AIDP.SNMPGetRequest { Variables = vbl });
                                 else
-                                    ret = appliance.AIDPSession.SendRequest(new AvoCommLib.Protocols.AIDP.SNMPGetNextRequest { Variables = vbl.ToArray() });
+                                    ret = appliance.AIDPSession.SendRequest(new AvoCommLib.Protocols.AIDP.SNMPGetNextRequest { Variables = vbl });
 
                                 ret.Wait();
 
