@@ -81,6 +81,8 @@ namespace AvoCommLib
                         if (serializationType == null)
                             serializationType = field.FieldType;
                         dynamic data = field.GetValue(command);
+                        if (serializationType != data.GetType())
+                            data = Convert.ChangeType(data, serializationType);
                         if (data != null)
                             yield return new CommandField(metadata.FieldID, data);
                     }
@@ -92,6 +94,8 @@ namespace AvoCommLib
                         if (serializationType == null)
                             serializationType = property.PropertyType;
                         dynamic data = property.GetValue(command);
+                        if (serializationType != data.GetType())
+                            data = Convert.ChangeType(data, serializationType);
                         if (data != null)
                             yield return new CommandField(metadata.FieldID, data);
                     }
