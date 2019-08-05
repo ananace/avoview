@@ -101,14 +101,6 @@ namespace AvoCommLib
                     }
                 }
 
-                public static void SerializeFromFields(this ICommand command)
-                {
-                }
-
-                public static void SerializeToFields(this ICommand command)
-                {
-                }
-
                 public static CommandAttribute GetCommandInfo(this ICommand command)
                 {
                     return command.GetType().GetCustomAttribute(typeof(CommandAttribute)) as CommandAttribute;

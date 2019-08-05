@@ -22,8 +22,8 @@ namespace AvoCommLib
 
             public abstract class ResultResponse : BaseCommand
             {
-                [CommandField(1, SerializeAs = typeof(UInt16))]
-                public Result? Result { get; set; }
+                [CommandField(1, SerializeAs = typeof(UInt16), Required = true)]
+                public Result Result { get; set; }
             }
 
             [Command("ASMP", (byte)CommandTypes.LoginResponse)]
@@ -39,7 +39,7 @@ namespace AvoCommLib
             {
                 [CommandField(1, Required = true)]
                 public Variable[] Variables { get; set; }
-                public Variable Variable { get { return Variables.First(); } set { Variables = new[] { value }; } }
+                public Variable Variable { get { return Variables.FirstOrDefault(); } set { Variables = new[] { value }; } }
             }
 
             [Command("ASMP", (byte)CommandTypes.SNMPGetRequest)]
@@ -57,14 +57,14 @@ namespace AvoCommLib
 
             public abstract class SNMPResponse : BaseCommand
             {
-                [CommandField(1, SerializeAs = typeof(UInt16))]
+                [CommandField(1, SerializeAs = typeof(UInt16), Required = true)]
                 public bool HasError { get; set; }
-                [CommandField(2, SerializeAs = typeof(UInt16))]
-                public Result? Result { get; set; }
+                [CommandField(2, SerializeAs = typeof(UInt16), Required = true)]
+                public Result Result { get; set; }
 
-                [CommandField(3)]
-                public IEnumerable<Variable> Variables { get; set; }
-                public Variable Variable { get { return Variables.First(); } }
+                [CommandField(3, Required = true)]
+                public Variable[] Variables { get; set; }
+                public Variable Variable { get { return Variables.FirstOrDefault(); } set { Variables = new[] { value }; } }
             }
 
             [Command("ASMP", (byte)CommandTypes.SNMPGetResponse)]
@@ -94,7 +94,7 @@ namespace AvoCommLib
             public class WriteRequest : BaseCommand
             {
                 [CommandField(1, Required = true)]
-                public int? BlockNumber { get; set; }
+                public int BlockNumber { get; set; }
                 [CommandField(2)]
                 public byte[] BlockData { get; set; }
             }
@@ -130,7 +130,7 @@ namespace AvoCommLib
             public class ReadRequest : BaseCommand
             {
                 [CommandField(1, Required = true)]
-                public int? BlockNumber { get; set; }
+                public int BlockNumber { get; set; }
             }
 
             [Command("ASMP", (byte)CommandTypes.ReadResponse)]
@@ -151,17 +151,10 @@ namespace AvoCommLib
             [Command("ASMP", (byte)CommandTypes.HeartbeatRequest)]
             public class HeartbeatRequest : BaseCommand
             {
-                public HeartbeatRequest()
-                {
-                    // Default values
-                    Interval = 60;
-                    Timeout = 120;
-                }
-
                 [CommandField(1, Required = true)]
-                public short Interval { get; set; }
+                public short Interval { get; set; } = 60;
                 [CommandField(2, Required = true)]
-                public short Timeout { get; set; }
+                public short Timeout { get; set; } = 120;
             }
 
             [Command("ASMP", (byte)CommandTypes.HeartbeatResponse)]
@@ -187,7 +180,7 @@ namespace AvoCommLib
             [Command("ASMP", (byte)CommandTypes.VersionResponse)]
             public class VersionResponse : ResultResponse
             {
-                [CommandField(1)]
+                [CommandField(1, Required = true)]
                 public string Version { get; set; }
             }
 
