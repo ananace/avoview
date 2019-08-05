@@ -6,7 +6,7 @@ namespace AvoCommLib
     {
         namespace Base
         {
-            [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+            [AttributeUsage(AttributeTargets.Property)]
             public class CommandFieldAttribute : Attribute
             {
                 public CommandFieldAttribute(byte FieldID)

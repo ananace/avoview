@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -69,23 +70,8 @@ namespace AvoCommLib
                 // TODO: Use regular 'object' and have a field creation method to switch between them
                 public static IEnumerable<CommandField> GetFields(this ICommand command)
                 {
-                    var fields = command.GetType().GetFields()
-                        .Where(f => f.GetCustomAttribute<CommandFieldAttribute>() != null);
                     var properties = command.GetType().GetProperties()
                         .Where(f => f.GetCustomAttribute<CommandFieldAttribute>() != null);
-
-                    foreach (var field in fields)
-                    {
-                        var metadata = field.GetCustomAttribute<CommandFieldAttribute>();
-                        var serializationType = metadata.SerializeAs;
-                        if (serializationType == null)
-                            serializationType = field.FieldType;
-                        dynamic data = field.GetValue(command);
-                        if (serializationType != data.GetType())
-                            data = Convert.ChangeType(data, serializationType);
-                        if (data != null)
-                            yield return new CommandField(metadata.FieldID, data);
-                    }
 
                     foreach (var property in properties)
                     {
@@ -94,10 +80,21 @@ namespace AvoCommLib
                         if (serializationType == null)
                             serializationType = property.PropertyType;
                         dynamic data = property.GetValue(command);
-                        if (serializationType != data.GetType())
-                            data = Convert.ChangeType(data, serializationType);
                         if (data != null)
-                            yield return new CommandField(metadata.FieldID, data);
+                        {
+                            if (serializationType != data.GetType())
+                                data = Convert.ChangeType(data, serializationType);
+                            if (data is IEnumerable)
+                            {
+                                foreach (var obj in (IEnumerable)data)
+                                {
+                                    dynamic dobj = obj;
+                                    yield return new CommandField(metadata.FieldID, dobj);
+                                }
+                            }
+                            else
+                                yield return new CommandField(metadata.FieldID, data);
+                        }
                     }
                 }
 
