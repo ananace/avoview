@@ -129,16 +129,7 @@ namespace AvoCommLib
 
                         cmd = Activator.CreateInstance(found) as BaseCommand;
                         cmd.CommandSequence = sequence;
-
-                        while (true)
-                        {
-                            byte fieldID = read.ReadByte();
-                            if (fieldID == 255 || read.PeekChar() < 0)
-                                break;
-
-                            ushort fieldLength = read.ReadUInt16();
-                            cmd.Fields.Fields.Add(new CommandField(fieldID, read.ReadBytes(fieldLength)));
-                        }
+                        cmd.ReadFromStream(stream);
 
                         if (read.ReadByte() != 13)
                             throw new Exception("Faulty or missing terminator");

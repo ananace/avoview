@@ -47,7 +47,8 @@ namespace AvoCommLib
                     using (var write = new BigEndianWriter(ms))
                     {
                         var info = command.GetCommandInfo();
-                        foreach (var field in command.GetFields())
+                        var fields = command.GetFields();
+                        foreach (var field in fields)
                         {
                             if (field.FieldData == null)
                                 continue;
@@ -57,7 +58,7 @@ namespace AvoCommLib
                             write.Write(field.FieldData);
                         }
 
-                        if (command.Fields.Any() || info.AlwaysAddEOFField)
+                        if (fields.Any() || info.AlwaysAddEOFField)
                             write.Write((byte)255);
                     }
 
@@ -94,6 +95,33 @@ namespace AvoCommLib
                             }
                             else
                                 yield return new CommandField(metadata.FieldID, data);
+                        }
+                    }
+                }
+
+                public static void ReadFromStream(this ICommand command, Stream stream)
+                {
+                    var properties = command.GetType().GetProperties()
+                        .Where(f => f.GetCustomAttribute<CommandFieldAttribute>() != null)
+                        .Select(f => new { Property = f, Metadata = f.GetCustomAttribute<CommandFieldAttribute>() });
+
+                    using (var read = new BigEndianReader(stream))
+                    {
+                        while (true)
+                        {
+                            byte fieldID = read.ReadByte();
+                            if (fieldID == 255 || read.PeekChar() < 0)
+                                break;
+
+                            ushort fieldLength = read.ReadUInt16();
+                            var fieldData = read.ReadBytes(fieldLength);
+
+                            var fieldInfo = properties.First(f => f.Metadata.FieldID == fieldID);
+                            var serializationType = fieldInfo.Property.PropertyType;
+                            if (fieldInfo.Metadata.SerializeAs != null)
+                                serializationType = fieldInfo.Metadata.SerializeAs;
+
+                            // TODO: Read an instance of serializationType from fieldData
                         }
                     }
                 }
