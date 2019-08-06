@@ -46,7 +46,7 @@ namespace AvoCommLib
                 {
                     if (_readers == null)
                         _readers = new Dictionary<Type, Func<int, object>>{
-                            [typeof(byte)] = s => ReadByte(),
+                            [typeof(byte)] = s => { AssertSize(s, 1); return ReadByte(); },
                             [typeof(char)] = s => ReadChar(),
                             [typeof(UInt16)] = s => ReadUInt16(),
                             [typeof(Int16)] = s => ReadInt16(),
@@ -71,6 +71,12 @@ namespace AvoCommLib
                     return Readers[type](size);
                 
                 throw new ArgumentException("Unable to read data of given type", nameof(type));
+            }
+
+            void AssertSize(int size, int required)
+            {
+                if (size != required)
+                    throw new ArgumentException($"Size is not {required}", nameof(size));
             }
         }
     }
