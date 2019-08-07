@@ -37,7 +37,7 @@ namespace AvoCommLib
 
             public abstract class SNMPRequest : BaseCommand
             {
-                [CommandField(1, Required = true)]
+                [CommandField(1, Repeated = true, Required = true)]
                 public List<Variable> Variables { get; set; }
                 public Variable Variable { get { return Variables.FirstOrDefault(); } set { Variables = new List<Variable>{ value }; } }
             }
@@ -62,7 +62,7 @@ namespace AvoCommLib
                 [CommandField(2, SerializeAs = typeof(UInt16), Required = true)]
                 public Result Result { get; set; }
 
-                [CommandField(3, Required = true)]
+                [CommandField(3, Repeated = true, Required = true)]
                 public List<Variable> Variables { get; set; }
                 public Variable Variable { get { return Variables.FirstOrDefault(); } set { Variables = new List<Variable>{ value }; } }
             }
