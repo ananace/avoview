@@ -121,20 +121,36 @@ namespace AvoCommLib
                         if (Nullable.GetUnderlyingType(serializationType) != null)
                             serializationType = Nullable.GetUnderlyingType(serializationType);
 
-                        if (serializationType != typeof(byte[]) && serializationType.GetInterfaces().Any(i => i == typeof(IList)))
+                        if (fieldInfo.Metadata.Repeated)
                         {
+                            if (!serializationType.GetInterfaces().Any(i => i == typeof(IList)))
+                                throw new Exception("Repeated field is not of a list type");
+
                             var listType = serializationType.GetInterfaces().First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IList<>));
                             var internalSerializationType = listType.GetGenericArguments()[0];
 
                             var cur = fieldInfo.Property.GetValue(command) as IList;
-                            if (cur == null)
-                                cur = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(internalSerializationType));
-                            cur.Add(read.ReadOfType(fieldLength, internalSerializationType));
-
-                            if (serializationType.IsArray)
-                                fieldInfo.Property.SetValue(command, cur);
+                            if (!serializationType.IsArray)
+                            {
+                                if (cur == null)
+                                    cur = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(internalSerializationType));
+                                cur.Add(read.ReadOfType(fieldLength, internalSerializationType));
+                            }
                             else
-                                fieldInfo.Property.SetValue(command, cur);
+                            {
+                                if (cur == null)
+                                    cur = Array.CreateInstance(internalSerializationType, 1);
+                                else
+                                {
+                                    var arr = Array.CreateInstance(internalSerializationType, cur.Count + 1);
+                                    Array.Copy((Array)cur, arr, cur.Count);
+                                    cur = arr;
+                                }
+
+                                cur[cur.Count - 1] = read.ReadOfType(fieldLength, internalSerializationType);
+                            }
+
+                            fieldInfo.Property.SetValue(command, cur);
                         }
                         else
                         {

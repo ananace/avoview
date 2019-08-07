@@ -17,6 +17,7 @@ namespace AvoCommLib
                 public byte FieldID { get; private set; }
                 public Type SerializeAs { get; set; }
                 public bool Required { get; set; }
+                public bool Repeated { get; set; }
             }
         }
     }
