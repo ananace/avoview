@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using AvoCommLib.Util;
 using BinaryEncoding;
@@ -47,17 +48,17 @@ namespace AvoCommLib
                     if (_readers == null)
                         _readers = new Dictionary<Type, Func<int, object>>{
                             [typeof(byte)] = s => { AssertSize(s, 1); return ReadByte(); },
-                            [typeof(char)] = s => ReadChar(),
-                            [typeof(UInt16)] = s => ReadUInt16(),
-                            [typeof(Int16)] = s => ReadInt16(),
-                            [typeof(UInt32)] = s => ReadUInt32(),
-                            [typeof(Int32)] = s => ReadInt32(),
-                            [typeof(UInt64)] = s => ReadUInt64(),
-                            [typeof(Int64)] = s => ReadInt64(),
+                            [typeof(char)] = s => { AssertSize(s, 1); return ReadChar(); },
+                            [typeof(UInt16)] = s => { AssertSize(s, 2); return ReadUInt16(); },
+                            [typeof(Int16)] = s => { AssertSize(s, 2); return ReadInt16(); },
+                            [typeof(UInt32)] = s => { AssertSize(s, 4); return ReadUInt32(); },
+                            [typeof(Int32)] = s => { AssertSize(s, 4); return ReadInt32(); },
+                            [typeof(UInt64)] = s => { AssertSize(s, 8); return ReadUInt64(); },
+                            [typeof(Int64)] = s => { AssertSize(s, 8); return ReadInt64(); },
 
                             [typeof(byte[])] = s => ReadBytes(s),
                             [typeof(string)] = s => ReadChars(s),
-                            [typeof(IPAddress)] = s => new IPAddress(ReadBytes(s)),
+                            [typeof(IPAddress)] = s => { AssertSize(s, 4, 16); return new IPAddress(ReadBytes(s)); },
                             [typeof(Lextm.SharpSnmpLib.Variable)] = s => SNMP.DecodeVarBind(ReadBytes(s))
                         };
                     return _readers;
@@ -73,9 +74,9 @@ namespace AvoCommLib
                 throw new ArgumentException("Unable to read data of given type", nameof(type));
             }
 
-            void AssertSize(int size, int required)
+            void AssertSize(int size, params int[] required)
             {
-                if (size != required)
+                if (!required.Any(r => size == r))
                     throw new ArgumentException($"Size is not {required}", nameof(size));
             }
         }
