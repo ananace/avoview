@@ -57,7 +57,7 @@ namespace AvoCommLib
                             [typeof(Int64)] = s => { AssertSize(s, 8); return ReadInt64(); },
 
                             [typeof(byte[])] = s => ReadBytes(s),
-                            [typeof(string)] = s => ReadChars(s),
+                            [typeof(string)] = s => new string(ReadChars(s)),
                             [typeof(IPAddress)] = s => { AssertSize(s, 4, 16); return new IPAddress(ReadBytes(s)); },
                             [typeof(Lextm.SharpSnmpLib.Variable)] = s => SNMP.DecodeVarBind(ReadBytes(s))
                         };
